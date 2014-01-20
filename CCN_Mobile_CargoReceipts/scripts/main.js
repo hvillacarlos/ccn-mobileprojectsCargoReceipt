@@ -24,7 +24,8 @@
         	else {
         		var infoDiv = document.getElementById("infoField");
         		var path = this.getWorkingFolder().replace('http://', 'file://') + "Sample1.pdf";
-        		infoDiv.innerText = path             
+        		infoDiv.innerText = path     
+                alert(path);
                 
         		if (device.platform === 'Android') {
         			window.open(path, '_system');
@@ -37,7 +38,7 @@
 
             Application.prototype.getWorkingFolder = function() {
             	var path = window.location.href.replace('index.html', '');
-                path = path.replace('#tabstrip-share','');            	
+                path = path.replace('#tabstrip-CargoDetail','');            	
                 return path;
             }
         

@@ -1,4 +1,4 @@
-// JayData 1.3.5
+// JayData 1.3.0
 // Dual licensed under MIT and GPL v2
 // Copyright JayStack Technologies (http://jaydata.org/licensing)
 //
@@ -1782,8 +1782,8 @@ if (!console.error) console.error = function () { };
     /// Collection of JayData services
     ///</summary>
     $data.__namespace = true;
-    $data.version = "JayData 1.3.5";
-    $data.versionNumber = "1.3.5";
+    $data.version = "JayData 1.3.0";
+    $data.versionNumber = "1.3.0";
     $data.root = {};
     $data.Acorn = $data.Acorn || (typeof acorn == 'object' ? acorn : undefined);
     $data.Esprima = $data.Esprima || (typeof esprima == 'object' ? esprima : undefined);
@@ -2170,8 +2170,8 @@ Object.isNullOrUndefined = function (value) {
                 this.configurable = true;
                 if (typeof memberDefinitionData === "number") {
                     this.value = memberDefinitionData;
-                    this.type = $data.Number;
-                    this.dataType = $data.Number;
+                    this.type = $data.Integer;
+                    this.dataType = $data.Integer;
                 } else if (typeof memberDefinitionData === "string") {
                     this.value = memberDefinitionData;
                     this.dataType = $data.String;
@@ -2326,21 +2326,13 @@ Object.isNullOrUndefined = function (value) {
     };
 
     MemberDefinition.prototype.toJSON = function () {
-        var property = {};
+        var alma = {};
         for (var name in this) {
             if (name !== 'defineBy' && name !== 'storageModel') {
-                if ((name === 'type' || name === 'dataType') && (this[name] && typeof this[name] === 'function')) {
-                    try {
-                        property[name] = Container.resolveName(this[name]);
-                    } catch (e) {
-                        property[name] = this[name];
-                    }
-                } else {
-                    property[name] = this[name];
-                }
+                alma[name] = this[name];
             }
         }
-        return property;
+        return alma;
     }
 
     //TODO global/window
@@ -2968,16 +2960,6 @@ Object.isNullOrUndefined = function (value) {
                 case t === $data.Object:
                 case t === $data.Guid:
 
-                case t === $data.Byte:
-                case t === $data.SByte:
-                case t === $data.Decimal:
-                case t === $data.Float:
-                case t === $data.Int16:
-                case t === $data.Int32:
-                case t === $data.Int64:
-                case t === $data.DateTimeOffset:
-                case t === $data.Time:
-
                 case t === $data.SimpleBase:
                 case t === $data.Geospatial:
                 case t === $data.GeographyBase:
@@ -3085,7 +3067,6 @@ Object.isNullOrUndefined = function (value) {
                     if (value.getType) return value.getType().fullName;
                     if (value instanceof Date) return '$data.Date';
                     if (value instanceof $data.Guid) return '$data.Guid';
-                    if (value instanceof $data.DateTimeOffset) return '$data.DateTimeOffset';
                     if (value instanceof $data.GeographyPoint) return '$data.GeographyPoint';
                     if (value instanceof $data.GeographyLineString) return '$data.GeographyLineString';
                     if (value instanceof $data.GeographyPolygon) return '$data.GeographyPolygon';
@@ -3129,14 +3110,7 @@ Object.isNullOrUndefined = function (value) {
             var t = this.resolveType(typeOrName);
             switch (t) {
                 case $data.Number: return 0.0;
-                case $data.Float: return 0.0;
-                case $data.Decimal: return '0.0';
                 case $data.Integer: return 0;
-                case $data.Int16: return 0;
-                case $data.Int32: return 0;
-                case $data.Int64: return '0';
-                case $data.Byte: return 0;
-                case $data.SByte: return 0;
                 case $data.String: return null;
                 case $data.Boolean: return false;
                 default: return null;
@@ -3343,6 +3317,17 @@ Object.isNullOrUndefined = function (value) {
     }
     $data.ContainerClass = ContainerCtor;
 
+    /*$data.Number = typeof Number !== 'undefined' ? Number : function JayNumber() { };
+    $data.Integer = typeof Integer !== 'undefined' ? Integer : function JayInteger() { };
+    $data.Date = typeof Date !== 'undefined' ? Date : function JayDate() { };
+    $data.String = typeof String !== 'undefined' ? String : function JayString() { };
+    $data.Boolean = typeof Boolean !== 'undefined' ? Boolean : function JayBoolean() { };
+    //$data.Blob = typeof Blob !== 'undefined' ? Blob : function JayBlob() { };
+    $data.Array = typeof Array !== 'undefined' ? Array : function JayArray() { };
+    $data.Object = typeof Object !== 'undefined' ? Object : function JayObject() { };
+    $data.ObjectID = typeof ObjectID !== 'undefined' ? ObjectID : function JayObjectID() { };
+    $data.Function = Function;*/
+
     var c;
         
     global["Container"] = $data.Container = c = global["C$"] = new ContainerCtor();
@@ -3350,6 +3335,163 @@ Object.isNullOrUndefined = function (value) {
     $data.createContainer = function () {
         return new ContainerCtor($data.Container);
     }
+
+    /*c.registerType(["$data.Number", "number", "float", "real", "decimal", "JayNumber"], $data.Number);
+    c.registerType(["$data.Integer", "int", "integer", "int16", "int32", "int64", "JayInteger"], $data.Integer);
+    c.registerType(["$data.String", "string", "text", "character", "JayString"], $data.String);
+    c.registerType(["$data.Array", "array", "Array", "[]", "JayArray"], $data.Array, function () {
+        return $data.Array.apply(undefined, arguments);
+    });
+    c.registerType(["$data.Date", "datetime", "date", "JayDate"], $data.Date);
+    c.registerType(["$data.Boolean", "bool", "boolean", "JayBoolean"], $data.Boolean);
+    c.registerType(["$data.Blob", "blob", "JayBlob"], $data.Blob);
+    c.registerType(["$data.Object", "Object", "object", "{}", "JayObject"], $data.Object);
+    c.registerType(["$data.Function", "Function", "function"], $data.Function);
+    c.registerType(['$data.ObjectID', 'ObjectID', 'objectId', 'objectid', 'ID', 'Id', 'id', 'JayObjectID'], $data.ObjectID);
+
+    $data.Container.registerConverter('$data.String', {
+        '$data.Date': function (value) {
+            return value ? value.toISOString() : value;
+        },
+        '$data.Number': function (value) {
+            return value.toString();
+        }
+    });
+
+    $data.Container.registerConverter('$data.Date', {
+        '$data.Number': function (value) {
+            var convertedValue = new Date(value);
+            if (isNaN(convertedValue.valueOf()))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Date', value));
+
+            return convertedValue;
+        },
+        '$data.String': function (value) {
+            if (value === '') return undefined;
+            var convertedValue = new Date(value);
+            if (isNaN(convertedValue.valueOf()))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Date', value));
+
+            return convertedValue;
+        }
+    });
+
+    $data.Container.registerConverter('$data.Integer', {
+        '$data.Number': function (value) {
+            var convertedValue = parseInt(value);
+            if (isNaN(convertedValue))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Integer', value));
+
+            return convertedValue;
+        },
+        '$data.String': function (value) {
+            if (value === '') return undefined;
+            var convertedValue = parseInt(value);
+            if (isNaN(convertedValue))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Integer', value));
+
+            return convertedValue;
+        },
+        '$data.Boolean': function (value) {
+            return value ? 1 : 0;
+        },
+        '$data.Date': function (value) {
+            var convertedValue = value.valueOf();
+            if (isNaN(convertedValue))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Integer', value));
+
+            return convertedValue;
+        }
+    });
+    $data.Container.registerConverter('$data.Number', {
+        '$data.String': function (value) {
+            if (value === '') return undefined;
+            var convertedValue = parseFloat(value);
+            if (isNaN(convertedValue))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Number', value));
+
+            return convertedValue;
+        },
+        '$data.Boolean': function (value) {
+            return value ? 1 : 0;
+        },
+        '$data.Date': function (value) {
+            var convertedValue = value.valueOf();
+            if (isNaN(convertedValue))
+                Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Number', value));
+
+            return convertedValue;
+        }
+    });
+    $data.Container.registerConverter('$data.Boolean', {
+        '$data.String': function (value) {
+            if (value === '') return undefined;
+            var convertedValue;
+            switch (value.toLowerCase()) {
+                case 'true':
+                    convertedValue = true;
+                    break;
+                case 'false':
+                    convertedValue = false;
+                    break;
+                default:
+                    Guard.raise(new Exception('TypeError: ', 'value not convertable to $data.Boolean', value));
+            }
+            return convertedValue;
+        },
+        '$data.Number': function (value) {
+            return value ? true : false;
+        }
+        //all conversations
+    });
+    $data.Container.registerConverter('$data.Object', {
+        '$data.String': function (value) {
+            if (value === '') return undefined;
+            var convertedValue;
+            try {
+                convertedValue = JSON.parse(value);
+            } catch (e) {
+                Guard.raise(new Exception('TypeError: ', e.toString(), value));
+            }
+            return convertedValue;
+        },
+        '$data.Number': function (value) {
+            return value;
+        },
+        '$data.Date': function (value) {
+            return value;
+        },
+        '$data.Array': function (value) {
+            return value;
+        }
+    });
+    $data.Container.registerConverter('$data.Blob', {
+        '$data.Number': function (value) {
+            return value;
+        },
+        '$data.String': function (value) {
+            return value;
+        },
+        '$data.Date': function (value) {
+            return value;
+        },
+        '$data.Object': function (value) {
+            return value;
+        },
+        '$data.Array': function (value) {
+            return value;
+        }
+    });
+    $data.Container.registerConverter('$data.ObjectID', {
+        '$data.String': function (value) {
+            return value;
+        }
+    }, {
+        '$data.String': function (value) {
+            return value;
+        }
+    });*/
+
 
     //})(window);
 
@@ -3502,8 +3644,7 @@ $data.defaultErrorCallback = function () {
         console.dir(arguments);
     else
         console.log(arguments);*/
-    if (arguments.length > 0 && arguments[arguments.length - 1] && typeof arguments[arguments.length - 1].reject === 'function') {
-        (console.error || console.log).call(console, arguments[0]);
+    if (arguments[arguments.length - 1] && typeof arguments[arguments.length - 1].reject === 'function') {
         arguments[arguments.length - 1].reject.apply(arguments[arguments.length - 1], arguments);
     } else {
         if (arguments[0] instanceof Error) {
@@ -3632,25 +3773,7 @@ $data.typeSystem = {
 };
 
 $data.debug = function () {
-    (console.debug || console.log).apply(console, arguments);
-};
-
-$data.debugWith = function () {
-    var cArgs = arguments;
-    return function (r) {
-        (console.debug || console.log).apply(console, cArgs);
-        if ((typeof Error !== 'undefined' && r instanceof Error) ||
-            (typeof Exception !== 'undefined' && r instanceof Exception)) {
-            (console.error || console.log).apply(console, arguments);
-        } else {
-            (console.debug || console.log).apply(console, arguments);
-        }
-    }
-};
-
-$data.fdebug = { 
-    success: $data.debugWith('success'),
-    error: $data.debugWith('error')
+    console.log.apply(console, arguments);
 };
 $data.Number = typeof Number !== 'undefined' ? Number : function JayNumber() { };
 $data.Date = typeof Date !== 'undefined' ? Date : function JayDate() { };
@@ -3666,20 +3789,13 @@ $data.Decimal = function JayDecimal() { };
 $data.Float = $data.Single = function JayFloat() { };
 $data.Integer = function JayInteger() { };
 $data.Int16 = function JayInt16(v) { };
-$data.Int32 = function JayInt32() { };
 $data.Int64 = function JayInt64(v) { };
 $data.ObjectID = typeof $data.mongoDBDriver !== 'undefined' && typeof $data.mongoDBDriver.ObjectID !== 'undefined' ? $data.mongoDBDriver.ObjectID : function JayObjectID() { };
-$data.Time = function JayTime() { };
-$data.DateTimeOffset = function JayDateTimeOffset(val) {
-    this.value = val;
-};
-$data.DateTimeOffset.prototype.toJSON = function () {
-    return this.value instanceof Date ? this.value.toISOString() : this.value;
-};
+$data.Time = function JayTime(){};
+$data.DateTimeOffset = function JayDateTimeOffset(){};
 
 $data.Container.registerType(["$data.Number", "number", "JayNumber", "double"], $data.Number);
-$data.Container.registerType(["$data.Integer", "int", "integer", "JayInteger"], $data.Integer);
-$data.Container.registerType(["$data.Int32", "int32", "JayInt32"], $data.Int32);
+$data.Container.registerType(["$data.Integer", "$data.Int32", "int", "int32", "integer", "JayInteger"], $data.Integer);
 $data.Container.registerType(["$data.Byte", "byte", "JayByte"], $data.Byte);
 $data.Container.registerType(["$data.SByte", "sbyte", "JaySByte"], $data.SByte);
 $data.Container.registerType(["$data.Decimal", "decimal", "JayDecimal"], $data.Decimal);
@@ -3737,20 +3853,13 @@ $data.Decimal = function JayDecimal() { };
 $data.Float = $data.Single = function JayFloat() { };
 $data.Integer = function JayInteger() { };
 $data.Int16 = function JayInt16(v) { };
-$data.Int32 = function JayInt32() { };
 $data.Int64 = function JayInt64(v) { };
 $data.ObjectID = typeof $data.mongoDBDriver !== 'undefined' && typeof $data.mongoDBDriver.ObjectID !== 'undefined' ? $data.mongoDBDriver.ObjectID : function JayObjectID() { };
-$data.Time = function JayTime() { };
-$data.DateTimeOffset = function JayDateTimeOffset(val) {
-    this.value = val;
-};
-$data.DateTimeOffset.prototype.toJSON = function () {
-    return this.value instanceof Date ? this.value.toISOString() : this.value;
-};
+$data.Time = function JayTime(){};
+$data.DateTimeOffset = function JayDateTimeOffset(){};
 
 $data.Container.registerType(["$data.Number", "number", "JayNumber", "double"], $data.Number);
-$data.Container.registerType(["$data.Integer", "int", "integer", "JayInteger"], $data.Integer);
-$data.Container.registerType(["$data.Int32", "int32", "JayInt32"], $data.Int32);
+$data.Container.registerType(["$data.Integer", "$data.Int32", "int", "int32", "integer", "JayInteger"], $data.Integer);
 $data.Container.registerType(["$data.Byte", "byte", "JayByte"], $data.Byte);
 $data.Container.registerType(["$data.SByte", "sbyte", "JaySByte"], $data.SByte);
 $data.Container.registerType(["$data.Decimal", "decimal", "JayDecimal"], $data.Decimal);
@@ -3830,7 +3939,6 @@ $data.GeographyBase = function GeographyBase() {
     $data.Geospatial.apply(this, arguments);
 
     this.crs = $data.GeographyBase.defaultCrs;
-    $data.GeographyBase.validateGeoJSON(this);
 };
 
 $data.GeographyBase.defaultCrs = {
@@ -3890,22 +3998,6 @@ $data.GeographyBase.registerType = function (name, type, base) {
     $data.GeographyBase.registered = $data.GeographyBase.registered || {};
     $data.GeographyBase.registered[name.toLowerCase()] = type;
 };
-$data.GeographyBase.validateGeoJSON = function (geoData) {
-    var type = geoData.type;
-    if (type) {
-        var geoType = $data.GeographyBase.registered[type.toLowerCase()];
-        if (typeof geoType.validateGeoJSON === 'function') {
-            var isValid = geoType.validateGeoJSON(geoData);
-            if (isValid) {
-                return isValid;
-            } else {
-                Guard.raise(new Exception("Invalid '" + type + "' format!", 'Format Exception', geoData));
-            }
-        }
-    }
-    console.log('GeoJSON validation missing', geoData);
-    return;
-};
 $data.SimpleBase.registerType('GeographyBase', $data.GeographyBase, $data.Geospatial);
 $data.Container.registerType(['$data.GeographyBase'], $data.GeographyBase);
 
@@ -3922,13 +4014,6 @@ $data.GeographyPoint = function GeographyPoint(lon, lat) {
     } else {
         $data.GeographyBase.call(this, { coordinates: [lon || 0, lat || 0] });
     }
-};
-$data.GeographyPoint.validateGeoJSON = function (geoData) {
-    return geoData && 
-        Array.isArray(geoData.coordinates) && 
-        geoData.coordinates.length == 2 && 
-        typeof geoData.coordinates[0] === 'number' &&
-        typeof geoData.coordinates[1] === 'number';
 };
 $data.GeographyPoint.parseFromString = function (strData) {
     var data = strData.substring(strData.indexOf('(') + 1, strData.lastIndexOf(')'));
@@ -3951,95 +4036,17 @@ $data.GeographyLineString = function GeographyLineString(data) {
         $data.GeographyBase.call(this, data);
     }
 };
-$data.GeographyLineString.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var point = geoData.coordinates[i];
-        isValid = isValid &&
-            Array.isArray(point) &&
-            point.length == 2 &&
-            typeof point[0] === 'number' &&
-            typeof point[1] === 'number';
-    }
-    
-    return isValid;
-};
 $data.GeographyLineString.validMembers = ['coordinates'];
 $data.GeographyBase.registerType('LineString', $data.GeographyLineString);
 $data.Container.registerType(['$data.GeographyLineString', 'GeographyLineString'], $data.GeographyLineString);
 
 /* $data.GeographyPolygon */
 $data.GeographyPolygon = function GeographyPolygon(data) {
-    if (typeof data === 'object' && (('topLeft' in data && 'bottomRight' in data) || ('topRight' in data && 'bottomLeft' in data))) {
-        var tl, tr, bl, br;
-
-        if ('topLeft' in data && 'bottomRight' in data) {
-            tl = data.topLeft instanceof $data.GeographyPoint ? data.topLeft : new $data.GeographyPoint(data.topLeft);
-            br = data.bottomRight instanceof $data.GeographyPoint ? data.bottomRight : new $data.GeographyPoint(data.bottomRight);
-            tr = new $data.GeographyPoint([br.coordinates[0], tl.coordinates[1]]);
-            bl = new $data.GeographyPoint([tl.coordinates[0], br.coordinates[1]]);
-        } else {
-            tr = data.topRight instanceof $data.GeographyPoint ? data.topRight : new $data.GeographyPoint(data.topRight);
-            bl = data.bottomLeft instanceof $data.GeographyPoint ? data.bottomLeft : new $data.GeographyPoint(data.bottomLeft);
-            tl = new $data.GeographyPoint([bl.coordinates[0], tr.coordinates[1]]);
-            br = new $data.GeographyPoint([tr.coordinates[0], bl.coordinates[1]]);
-        }
-
-        var coordinates = [];
-        coordinates.push([].concat(tl.coordinates));
-        coordinates.push([].concat(tr.coordinates));
-        coordinates.push([].concat(br.coordinates));
-        coordinates.push([].concat(bl.coordinates));
-        coordinates.push([].concat(tl.coordinates));
-
-        $data.GeographyBase.call(this, { coordinates: [coordinates] });
-
-    }else if (Array.isArray(data)) {
+    if (Array.isArray(data)) {
         $data.GeographyBase.call(this, { coordinates: data });
     } else {
         $data.GeographyBase.call(this, data);
     }
-};
-$data.GeographyPolygon.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var polygon = geoData.coordinates[i];
-        var isValid = isValid && Array.isArray(polygon);
-            
-        for (var j = 0; isValid && j < polygon.length; j++) {
-            var point = polygon[j];
-
-            isValid = isValid &&
-                Array.isArray(point) &&
-                point.length == 2 &&
-                typeof point[0] === 'number' &&
-                typeof point[1] === 'number';
-        }
-    }
-
-    return isValid;
-};
-$data.GeographyPolygon.parseFromString = function (strData) {
-    var data = strData.substring(strData.indexOf('(') + 1, strData.lastIndexOf(')'));
-    var rings = data.substring(data.indexOf('(') + 1, data.lastIndexOf(')')).split('),(');
-
-    var data = [];
-    for (var i = 0; i < rings.length; i++) {
-        var polyPoints = [];
-        var pairs = rings[i].split(',');
-        for (var j = 0; j < pairs.length; j++) {
-            var values = pairs[j].split(' ');
-
-            polyPoints.push([parseFloat(values[0]), parseFloat(values[1])]);
-        }
-        data.push(polyPoints);
-    }
-
-    return new $data.GeographyPolygon(data);
 };
 $data.GeographyPolygon.validMembers = ['coordinates'];
 $data.GeographyBase.registerType('Polygon', $data.GeographyPolygon);
@@ -4053,21 +4060,6 @@ $data.GeographyMultiPoint = function GeographyMultiPoint(data) {
         $data.GeographyBase.call(this, data);
     }
 };
-$data.GeographyMultiPoint.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var point = geoData.coordinates[i];
-        isValid = isValid &&
-            Array.isArray(point) &&
-            point.length == 2 &&
-            typeof point[0] === 'number' &&
-            typeof point[1] === 'number';
-    }
-
-    return isValid;
-};
 $data.GeographyMultiPoint.validMembers = ['coordinates'];
 $data.GeographyBase.registerType('MultiPoint', $data.GeographyMultiPoint);
 $data.Container.registerType(['$data.GeographyMultiPoint', 'GeographyMultiPoint'], $data.GeographyMultiPoint);
@@ -4079,27 +4071,6 @@ $data.GeographyMultiLineString = function GeographyMultiLineString(data) {
     } else {
         $data.GeographyBase.call(this, data);
     }
-};
-$data.GeographyMultiLineString.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var polygon = geoData.coordinates[i];
-        var isValid = isValid && Array.isArray(polygon);
-
-        for (var j = 0; isValid && j < polygon.length; j++) {
-            var point = polygon[j];
-
-            isValid = isValid &&
-                Array.isArray(point) &&
-                point.length == 2 &&
-                typeof point[0] === 'number' &&
-                typeof point[1] === 'number';
-        }
-    }
-
-    return isValid;
 };
 $data.GeographyMultiLineString.validMembers = ['coordinates'];
 $data.GeographyBase.registerType('MultiLineString', $data.GeographyMultiLineString);
@@ -4113,32 +4084,6 @@ $data.GeographyMultiPolygon = function GeographyMultiPolygon(data) {
         $data.GeographyBase.call(this, data);
     }
 };
-$data.GeographyMultiPolygon.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var k = 0; isValid && k < geoData.coordinates.length; k++) {
-        var polygons = geoData.coordinates[k];
-        var isValid = isValid && Array.isArray(polygons);
-
-        for (var i = 0; isValid && i < polygons.length; i++) {
-            var polygon = polygons[i];
-            var isValid = isValid && Array.isArray(polygon);
-
-            for (var j = 0; isValid && j < polygon.length; j++) {
-                var point = polygon[j];
-
-                isValid = isValid &&
-                    Array.isArray(point) &&
-                    point.length == 2 &&
-                    typeof point[0] === 'number' &&
-                    typeof point[1] === 'number';
-            }
-        }
-    }
-
-    return isValid;
-};
 $data.GeographyMultiPolygon.validMembers = ['coordinates'];
 $data.GeographyBase.registerType('MultiPolygon', $data.GeographyMultiPolygon);
 $data.Container.registerType(['$data.GeographyMultiPolygon', 'GeographyMultiPolygon'], $data.GeographyMultiPolygon);
@@ -4150,21 +4095,6 @@ $data.GeographyCollection = function GeographyCollection(data) {
     } else {
         $data.GeographyBase.call(this, data);
     }
-};
-$data.GeographyCollection.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.geometries);
-
-    for (var i = 0; isValid && i < geoData.geometries.length; i++) {
-        var geometry = geoData.geometries[i];
-        try {
-            isValid = isValid && $data.GeographyBase.validateGeoJSON(geometry);
-        } catch (e) {
-            isValid = false;
-        }
-    }
-
-    return isValid;
 };
 $data.GeographyCollection.validMembers = ['geometries'];
 $data.GeographyBase.registerType('GeometryCollection', $data.GeographyCollection);
@@ -4198,7 +4128,6 @@ $data.GeometryBase = function GeometryBase() {
     $data.Geospatial.apply(this, arguments);
 
     this.crs = $data.GeometryBase.defaultCrs;
-    $data.GeometryBase.validateGeoJSON(this);
 };
 
 $data.GeometryBase.defaultCrs = {
@@ -4258,22 +4187,6 @@ $data.GeometryBase.registerType = function (name, type, base) {
     $data.GeometryBase.registered = $data.GeometryBase.registered || {};
     $data.GeometryBase.registered[name.toLowerCase()] = type;
 };
-$data.GeometryBase.validateGeoJSON = function (geoData) {
-    var type = geoData.type;
-    if (type) {
-        var geoType = $data.GeometryBase.registered[type.toLowerCase()];
-        if (typeof geoType.validateGeoJSON === 'function') {
-            var isValid = geoType.validateGeoJSON(geoData);
-            if (isValid) {
-                return isValid;
-            } else {
-                Guard.raise(new Exception("Invalid '" + type + "' format!", 'Format Exception', geoData));
-            }
-        }
-    }
-    console.log('GeoJSON validation missing', geoData);
-    return;
-};
 $data.SimpleBase.registerType('GeometryBase', $data.GeometryBase, $data.Geospatial);
 $data.Container.registerType(['$data.GeometryBase'], $data.GeometryBase);
 
@@ -4289,13 +4202,6 @@ $data.GeometryPoint = function GeometryPoint(x, y) {
     } else {
         $data.GeometryBase.call(this, { coordinates: [x || 0, y || 0] });
     }
-};
-$data.GeometryPoint.validateGeoJSON = function (geoData) {
-    return geoData &&
-        Array.isArray(geoData.coordinates) &&
-        geoData.coordinates.length == 2 &&
-        typeof geoData.coordinates[0] === 'number' &&
-        typeof geoData.coordinates[1] === 'number';
 };
 $data.GeometryPoint.parseFromString = function (strData) {
     var data = strData.substring(strData.indexOf('(') + 1, strData.lastIndexOf(')'));
@@ -4317,95 +4223,17 @@ $data.GeometryLineString = function GeometryLineString(data) {
         $data.GeometryBase.call(this, data);
     }
 };
-$data.GeometryLineString.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var point = geoData.coordinates[i];
-        isValid = isValid &&
-            Array.isArray(point) &&
-            point.length == 2 &&
-            typeof point[0] === 'number' &&
-            typeof point[1] === 'number';
-    }
-
-    return isValid;
-};
 $data.GeometryLineString.validMembers = ['coordinates'];
 $data.GeometryBase.registerType('LineString', $data.GeometryLineString);
 $data.Container.registerType(['$data.GeometryLineString', 'GeometryLineString'], $data.GeometryLineString);
 
 /* $data.GeometryPolygon */
 $data.GeometryPolygon = function GeometryPolygon(data) {
-    if (typeof data === 'object' && (('topLeft' in data && 'bottomRight' in data) || ('topRight' in data && 'bottomLeft' in data))) {
-        var tl, tr, bl, br;
-
-        if ('topLeft' in data && 'bottomRight' in data) {
-            tl = data.topLeft instanceof $data.GeometryPoint ? data.topLeft : new $data.GeometryPoint(data.topLeft);
-            br = data.bottomRight instanceof $data.GeometryPoint ? data.bottomRight : new $data.GeometryPoint(data.bottomRight);
-            tr = new $data.GeometryPoint([br.coordinates[0], tl.coordinates[1]]);
-            bl = new $data.GeometryPoint([tl.coordinates[0], br.coordinates[1]]);
-        } else {
-            tr = data.topRight instanceof $data.GeometryPoint ? data.topRight : new $data.GeometryPoint(data.topRight);
-            bl = data.bottomLeft instanceof $data.GeometryPoint ? data.bottomLeft : new $data.GeometryPoint(data.bottomLeft);
-            tl = new $data.GeometryPoint([bl.coordinates[0], tr.coordinates[1]]);
-            br = new $data.GeometryPoint([tr.coordinates[0], bl.coordinates[1]]);
-        }
-
-        var coordinates = [];
-        coordinates.push([].concat(tl.coordinates));
-        coordinates.push([].concat(tr.coordinates));
-        coordinates.push([].concat(br.coordinates));
-        coordinates.push([].concat(bl.coordinates));
-        coordinates.push([].concat(tl.coordinates));
-
-        $data.GeometryBase.call(this, { coordinates: [coordinates] });
-
-    }else if (Array.isArray(data)) {
+    if (Array.isArray(data)) {
         $data.GeometryBase.call(this, { coordinates: data });
     } else {
         $data.GeometryBase.call(this, data);
     }
-};
-$data.GeometryPolygon.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var polygon = geoData.coordinates[i];
-        var isValid = isValid && Array.isArray(polygon);
-
-        for (var j = 0; isValid && j < polygon.length; j++) {
-            var point = polygon[j];
-
-            isValid = isValid &&
-                Array.isArray(point) &&
-                point.length == 2 &&
-                typeof point[0] === 'number' &&
-                typeof point[1] === 'number';
-        }
-    }
-
-    return isValid;
-};
-$data.GeometryPolygon.parseFromString = function (strData) {
-    var data = strData.substring(strData.indexOf('(') + 1, strData.lastIndexOf(')'));
-    var rings = data.substring(data.indexOf('(') + 1, data.lastIndexOf(')')).split('),(');
-
-    var data = [];
-    for (var i = 0; i < rings.length; i++) {
-        var polyPoints = [];
-        var pairs = rings[i].split(',');
-        for (var j = 0; j < pairs.length; j++) {
-            var values = pairs[j].split(' ');
-
-            polyPoints.push([parseFloat(values[0]), parseFloat(values[1])]);
-        }
-        data.push(polyPoints);
-    }
-
-    return new $data.GeometryPolygon(data);
 };
 $data.GeometryPolygon.validMembers = ['coordinates'];
 $data.GeometryBase.registerType('Polygon', $data.GeometryPolygon);
@@ -4419,21 +4247,6 @@ $data.GeometryMultiPoint = function GeometryMultiPoint(data) {
         $data.GeometryBase.call(this, data);
     }
 };
-$data.GeometryMultiPoint.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var point = geoData.coordinates[i];
-        isValid = isValid &&
-            Array.isArray(point) &&
-            point.length == 2 &&
-            typeof point[0] === 'number' &&
-            typeof point[1] === 'number';
-    }
-
-    return isValid;
-};
 $data.GeometryMultiPoint.validMembers = ['coordinates'];
 $data.GeometryBase.registerType('MultiPoint', $data.GeometryMultiPoint);
 $data.Container.registerType(['$data.GeometryMultiPoint', 'GeometryMultiPoint'], $data.GeometryMultiPoint);
@@ -4445,27 +4258,6 @@ $data.GeometryMultiLineString = function GeometryMultiLineString(data) {
     } else {
         $data.GeometryBase.call(this, data);
     }
-};
-$data.GeometryMultiLineString.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var i = 0; isValid && i < geoData.coordinates.length; i++) {
-        var polygon = geoData.coordinates[i];
-        var isValid = isValid && Array.isArray(polygon);
-
-        for (var j = 0; isValid && j < polygon.length; j++) {
-            var point = polygon[j];
-
-            isValid = isValid &&
-                Array.isArray(point) &&
-                point.length == 2 &&
-                typeof point[0] === 'number' &&
-                typeof point[1] === 'number';
-        }
-    }
-
-    return isValid;
 };
 $data.GeometryMultiLineString.validMembers = ['coordinates'];
 $data.GeometryBase.registerType('MultiLineString', $data.GeometryMultiLineString);
@@ -4479,32 +4271,6 @@ $data.GeometryMultiPolygon = function GeometryMultiPolygon(data) {
         $data.GeometryBase.call(this, data);
     }
 };
-$data.GeometryMultiPolygon.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.coordinates);
-
-    for (var k = 0; isValid && k < geoData.coordinates.length; k++) {
-        var polygons = geoData.coordinates[k];
-        var isValid = isValid && Array.isArray(polygons);
-
-        for (var i = 0; isValid && i < polygons.length; i++) {
-            var polygon = polygons[i];
-            var isValid = isValid && Array.isArray(polygon);
-
-            for (var j = 0; isValid && j < polygon.length; j++) {
-                var point = polygon[j];
-
-                isValid = isValid &&
-                    Array.isArray(point) &&
-                    point.length == 2 &&
-                    typeof point[0] === 'number' &&
-                    typeof point[1] === 'number';
-            }
-        }
-    }
-
-    return isValid;
-};
 $data.GeometryMultiPolygon.validMembers = ['coordinates'];
 $data.GeometryBase.registerType('MultiPolygon', $data.GeometryMultiPolygon);
 $data.Container.registerType(['$data.GeometryMultiPolygon', 'GeometryMultiPolygon'], $data.GeometryMultiPolygon);
@@ -4516,21 +4282,6 @@ $data.GeometryCollection = function GeometryCollection(data) {
     } else {
         $data.GeometryBase.call(this, data);
     }
-};
-$data.GeometryCollection.validateGeoJSON = function (geoData) {
-    var isValid = geoData &&
-        Array.isArray(geoData.geometries);
-
-    for (var i = 0; isValid && i < geoData.geometries.length; i++) {
-        var geometry = geoData.geometries[i];
-        try {
-            isValid = isValid && $data.GeometryBase.validateGeoJSON(geometry);
-        } catch (e) {
-            isValid = false;
-        }
-    }
-
-    return isValid;
 };
 $data.GeometryCollection.validMembers = ['geometries'];
 $data.GeometryBase.registerType('GeometryCollection', $data.GeometryCollection);
@@ -4730,14 +4481,12 @@ $data.Container.registerConverter('$data.Blob',{
         if (typeof Blob !== 'undefined' && value instanceof Blob){
             var req = new XMLHttpRequest();
             req.open('GET', URL.createObjectURL(value), false);
-            req.responseType = 'arraybuffer';
             req.send(null);
-            return $data.Container.convertTo(req.response, $data.Blob);
+            return $data.Container.convertTo(req.responseText, $data.Blob);
         } else if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
             return new (typeof Buffer !== 'undefined' ? Buffer : Uint8Array)(new Uint8Array(value));
         }else if (value instanceof Uint8Array){
-            if (typeof Buffer !== 'undefined') return new Buffer(value);
-            else return value;
+            return new (typeof Buffer !== 'undefined' ? Buffer : Uint8Array)(value);
         }else if (typeof Buffer !== 'undefined' ? value instanceof Buffer : false){
             return value;
         }else if (value.buffer){
@@ -4748,7 +4497,7 @@ $data.Container.registerConverter('$data.Blob',{
                 arr[i] = value[i];
             }
             if (!arr.length) throw 0;
-            return new (typeof Buffer !== 'undefined' ? Buffer : Uint8Array)(arr);
+            return new (typeof Buffer !== 'undefined' ? Buffer : Uint8Array)(value);
         }
         throw 0;
     }
@@ -4896,7 +4645,6 @@ $data.Container.registerConverter('$data.Blob',{
         '$data.Date': 'Edm.DateTime',
         '$data.Number': 'Edm.Double',
         '$data.Integer': 'Edm.Int32',
-        '$data.Int32': 'Edm.Int32',
         '$data.String': 'Edm.String',
         '$data.ObjectID': 'Edm.String',
         '$data.GeographyPoint': 'Edm.GeographyPoint',
@@ -4930,27 +4678,41 @@ $data.Container.registerConverter('$data.Boolean', {
 });
 
 $data.Container.registerConverter('$data.Integer', {
-    'default': function (value) {
-        if (value === Number.POSITIVE_INFINITY ||
-            value === Number.NEGATIVE_INFINITY ||
-            value === Number.MAX_VALUE ||
-            value === Number.MIN_VALUE) {
-            return value;
-        }
-
-        var r = parseInt(+value, 10);
-        if (isNaN(r)) throw 0;
-        return r;
-    }
-});
-
-$data.Container.registerConverter('$data.Int32', {
-    'default': function (value) {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },*/
+    'default': function(value){
         return value | 0;
     }
+    /*'$data.Number': function(value){
+        return value | 0;
+    },
+    '$data.String': function(value){
+        var r = parseInt(value, 10);
+        if (isNaN(r)) throw 0;
+        return r | 0;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        return r;
+    }*/
 });
 
 $data.Container.registerConverter('$data.Number', {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.String': function(value){
+        var r = parseFloat(value);
+        if (isNaN(r)) throw 0;
+        return r;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        return r;
+    }*/
     'default': function(value){
         var r = +value;
         if (isNaN(r)) throw 0;
@@ -4959,6 +4721,27 @@ $data.Container.registerConverter('$data.Number', {
 });
 
 $data.Container.registerConverter('$data.Byte', {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.Number': function(value){
+        return (value | 0) & 0xff;
+    },
+    '$data.String': function(value){
+        var r = parseInt(value);
+        if (isNaN(r)) throw 0;
+        return r & 0xff;
+    },
+    '$data.Decimal': function(value){
+        var r = parseInt(value.split('.')[0]);
+        if (isNaN(r)) throw 0;
+        return r & 0xff;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        return r & 0xff;
+    }*/
     'default': function(value){
         return (value | 0) & 0xff;
     }
@@ -4973,8 +4756,24 @@ $data.Container.registerConverter('$data.Date', {
 });
 
 $data.Container.registerConverter('$data.DateTimeOffset', {
-    '$data.Date': function(value){
-        return value;
+    'default': function(value){
+        var d = new Date(value);
+        if (isNaN(d)) throw 0;
+        return d;
+    }
+});
+
+$data.Container.registerConverter('$data.Time', {
+    '$data.String': function (value) {
+        try {
+            var d = new Date(value);
+            if (!isNaN(d)) return d;
+        } catch (e) { }
+
+        var s = new Date(0, 0, 0).toISOString();
+        var r = new Date(s.split('T')[0] + 'T' + value + 'Z');
+        if (isNaN(r)) throw 0;
+        return r;
     },
     'default': function(value){
         var d = new Date(value);
@@ -4982,60 +4781,6 @@ $data.Container.registerConverter('$data.DateTimeOffset', {
         return d;
     }
 });
-(function () {
-    function parseFromString(value) {
-        var regex = /^([0-9]|0[0-9]|1[0-9]|2[0-3]):([0-5][0-9]|[0-9])(:([0-5][0-9]|[0-9])(\.(\d+))?)?$/;
-
-        var matches = regex.exec(value)
-        if (!matches) throw 0;
-        var time = '';
-        time += ('00' + matches[1]).slice(-2);
-        time += ':' + ('00' + matches[2]).slice(-2);
-        if (matches[4]) {
-            time += ':' + ('00' + matches[4]).slice(-2);
-        } else {
-            time += ':00';
-        }
-        if (matches[6])
-            time += '.' + (matches[6] + '000').slice(0, 3);
-
-        return time;
-    }
-
-    $data.Container.registerConverter('$data.Time', {
-        '$data.String': parseFromString,
-        '$data.Number': function tt(value) {
-            var metrics = [1000, 60, 60];
-            var result = [0, 0, 0, value | 0];
-
-            for (var i = 0; i < metrics.length; i++) {
-                result[metrics.length - (i + 1)] = (result[metrics.length - i] / metrics[i]) | 0;
-                result[metrics.length - i] -= result[metrics.length - (i + 1)] * metrics[i];
-            }
-
-            var time = '';
-            for (var i = 0; i < result.length; i++) {
-                if (i < result.length - 1) {
-                    time += ('00' + result[i]).slice(-2);
-                    if (i < result.length - 2) time += ':';
-                } else {
-                    time += '.' + ('000' + result[i]).slice(-3);
-                }
-            }
-
-            return parseFromString(time);
-        },
-        '$data.Date': function (value) {
-            var val = value.getHours() + ':' + value.getMinutes() + ':' + value.getSeconds();
-            var ms = value.getMilliseconds()
-            if (ms) {
-                val += '.' + ms;
-            }
-
-            return parseFromString(val);
-        }
-    });
-})();
 
 $data.Container.registerConverter('$data.Decimal', {
     '$data.Boolean': function(value){
@@ -5139,6 +4884,21 @@ $data.IEEE754 = function(v, e, f){
 };
 
 $data.Container.registerConverter('$data.Float', {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.Number': function(value){
+        return new Float32Array([value])[0];
+    },
+    '$data.String': function(value){
+        if (!/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) throw 0;
+        return new Float32Array([parseFloat(value)])[0];
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        return new Float32Array([r])[0];
+    }*/
     'default': function(value){
         var r = +value;
         if (isNaN(r)) throw 0;
@@ -5147,12 +4907,54 @@ $data.Container.registerConverter('$data.Float', {
 });
 
 $data.Container.registerConverter('$data.Int16', {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.Number': function(value){
+        var r = value & 0xffff;
+        if (r >= 0x8000) return r - 0x10000;
+        return r;
+    },
+    '$data.String': function(value){
+        if (!/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) throw 0;
+        var r = parseInt(value, 10) & 0xffff;
+        if (r >= 0x8000) return r - 0x10000;
+        return r;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        r = r & 0xffff;
+        if (r >= 0x8000) return r - 0x10000;
+        return r;
+    }*/
     'default': function(value){
         var r = (value | 0) & 0xffff;
         if (r >= 0x8000) return r - 0x10000;
         return r;
     }
 });
+
+/*$data.Container.registerConverter('$data.Int32', {
+    '$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.Number': function(value){
+        var r = value & 0xffffffff;
+        return r;
+    },
+    '$data.String': function(value){
+        if (!/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) throw 0;
+        var r = parseInt(value, 10) & 0xffffffff;
+        return r;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        r = r & 0xffffffff;
+        return r;
+    }
+});*/
 
 $data.Container.registerConverter('$data.Int64', {
     '$data.Boolean': function(value){
@@ -5178,6 +4980,27 @@ $data.Container.registerConverter('$data.Int64', {
 });
 
 $data.Container.registerConverter('$data.SByte', {
+    /*'$data.Boolean': function(value){
+        return value ? 1 : 0;
+    },
+    '$data.Number': function(value){
+        var r = value & 0xff;
+        if (r >= 0x80) return r - 0x100;
+        return r;
+    },
+    '$data.String': function(value){
+        if (!/^\-?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) throw 0;
+        var r = parseInt(value, 10) & 0xff;
+        if (r >= 0x80) return r - 0x100;
+        return r;
+    },
+    '$data.Date': function(value){
+        var r = value.valueOf();
+        if (isNaN(r)) throw 0;
+        r = r & 0xff;
+        if (r >= 0x80) return r - 0x100;
+        return r;
+    }*/
     'default': function(value){
         var r = (value | 0) & 0xff;
         if (r >= 0x80) return r - 0x100;
@@ -5225,6 +5048,18 @@ $data.Container.registerConverter('$data.ObjectID', {
     },
     '$data.String': function(id){
         return id;
+        /*if (id && typeof id === 'string'){
+            try{
+                return new $data.ObjectID(id);
+            }catch(e){
+                try{
+                    return new $data.ObjectID(new Buffer(id, 'base64').toString('ascii'));
+                }catch(e){
+                    console.log(e);
+                    return id;
+                }
+            }
+        }else return id;*/
     }
 });
 
@@ -5243,9 +5078,8 @@ $data.StringFunctions = {
             self = this.valueOf();
             str = arguments[0];
         } else
-            return false;
-            
-        if (typeof self !== 'string') return false;
+            return false;;
+
         return self.indexOf(str) === 0;
     },
     endsWith: function () {
@@ -5262,7 +5096,6 @@ $data.StringFunctions = {
         } else
             return false;
 
-        if (typeof self !== 'string') return false;
         return self.slice(-str.length) === str;
     },
     contains: function () {
@@ -5279,7 +5112,6 @@ $data.StringFunctions = {
         } else
             return false;
 
-        if (typeof self !== 'string') return false;
         return self.indexOf(str) >= 0;
     }
 };
@@ -5345,7 +5177,6 @@ $data.Class.define("$data.Expressions.ExpressionType", null, null, {}, {
     Count: "Count",
     InlineCount: "InlineCount",
     Single: "Single",
-    Find: "Find",
     Some: "Some",
     Every: "Every",
     ToArray: "ToArray",
@@ -8078,13 +7909,6 @@ $C('$data.Expressions.EntityExpression', $data.Expressions.ExpressionNode, null,
         return expression;
     },
 
-    VisitFindExpression: function (expression, context) {
-        var source = this.Visit(expression.source, context);
-        if (source !== expression.source)
-            return Container.createFindExpression(source);
-        return expression;
-    },
-
     VisitEveryExpression: function (expression, context) {
         var source = this.Visit(expression.source, context);
         if (source !== expression.source)
@@ -8496,18 +8320,6 @@ $C('$data.Expressions.SingleExpression', $data.Expressions.FrameOperator, null, 
     nodeType: { value: $data.Expressions.ExpressionType.Single, enumerable: true }
 });
 
-$C('$data.Expressions.FindExpression', $data.Expressions.FrameOperator, null, {
-    constructor: function (source, params) {
-        ///<signature>
-        ///<param name="source" type="$data.Expressions.EntitySetExpression" />
-        ///</signature>
-        this.source = source;
-        this.params = params;
-        this.resultType = $data.Object;
-    },
-    nodeType: { value: $data.Expressions.ExpressionType.Find, enumerable: true }
-});
-
 $C('$data.Expressions.FirstExpression', $data.Expressions.FrameOperator, null, {
     constructor: function (source) {
         ///<signature>
@@ -8612,7 +8424,7 @@ $C('$data.Expressions.MemberInfoExpression', $data.Expressions.ExpressionNode, n
 $C('$data.Expressions.ParametricQueryExpression', $data.Expressions.ExpressionNode, null, {
     constructor: function (expression, parameters) {
         this.expression = expression;
-        this.parameters = parameters || [];
+        this.parameters = parameters;
     },
     nodeType: { value: $data.Expressions.ExpressionType.ParametricQuery, enumerable: true }
 });$C('$data.Expressions.ProjectionExpression', $data.Expressions.EntitySetExpression, null, {
@@ -8898,41 +8710,6 @@ $data.Class.define('$data.Validation.EntityValidationBase', null, null, {
 
 $data.Validation = $data.Validation || {};
 $data.Validation.Entity = new $data.Validation.EntityValidationBase();
-$data.Class.define('$data.Validation.Defaults', null, null, null, {
-    validators: {
-        value: {
-            required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
-            customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
-
-            minValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value >= definedValue; },
-            maxValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value <= definedValue; },
-
-            minLength: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length >= definedValue; },
-            maxLength: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length <= definedValue; },
-            length: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length == definedValue; },
-            regex: function (value, definedValue) {
-                return Object.isNullOrUndefined(value) ||
-                    value.match(typeof definedValue === 'string'
-                        ? new RegExp((definedValue.indexOf('/') === 0 && definedValue.lastIndexOf('/') === (definedValue.length - 1)) ? definedValue.slice(1, -1) : definedValue)
-                        : definedValue)
-            }
-        }
-    },
-
-    _getGroupValidations: function (validations) {
-        var validators = {};
-        if (Array.isArray(validations)) {
-            for (var i = 0; i < validations.length; i++) {
-                var validator = validations[i];
-                if (typeof this.validators[validator] === 'function') {
-                    validators[validator] = this.validators[validator];
-                }
-            }
-        }
-
-        return validators;
-    }
-});
 
 $data.Class.define('$data.Validation.EntityValidation', $data.Validation.EntityValidationBase, null, {
 
@@ -8949,38 +8726,17 @@ $data.Class.define('$data.Validation.EntityValidation', $data.Validation.EntityV
         ///<param name="entity" type="$data.Entity" />
         ///<param name="memberDefinition" type="$data.MemberDefinition" />
         var errors = [];
-        var resolvedType = Container.resolveType(memberDefinition.dataType);
-        var typeName = Container.resolveName(resolvedType);
+        var typeName = Container.resolveName(Container.resolveType(memberDefinition.dataType));
         var value = !valueNotSet ? newValue : entity[memberDefinition.name];
-
-        if (!memberDefinition.inverseProperty && resolvedType && typeof resolvedType.isAssignableTo === 'function' && resolvedType.isAssignableTo($data.Entity)) {
-            typeName = $data.Entity.fullName;
-        }
-
         this.fieldValidate(entity, memberDefinition, value, errors, typeName);
         return errors;
     },
 
     getValidationValue: function (memberDefinition, validationName) {
-        var value;
         if (memberDefinition[validationName] && memberDefinition[validationName].value)
-            value = memberDefinition[validationName].value;
+            return memberDefinition[validationName].value;
         else
-            value = memberDefinition[validationName];
-
-        if (this.convertableValidation[validationName]) {
-            var typeToConvert;
-            if (this.convertableValidation[validationName] === true) {
-                typeToConvert = memberDefinition.type;
-            } else {
-                typeToConvert = this.convertableValidation[validationName];
-            }
-
-            if (typeToConvert)
-                value = Container.convertTo(value, typeToConvert, memberDefinition.elementType);
-        }
-
-        return value;
+            return memberDefinition[validationName];
     },
     getValidationMessage: function (memberDefinition, validationName, defaultMessage) {
         var eMessage = defaultMessage;
@@ -8995,53 +8751,56 @@ $data.Class.define('$data.Validation.EntityValidation', $data.Validation.EntityV
         return new $data.Validation.ValidationError(this.getValidationMessage(memberDefinition, validationName, defaultMessage), memberDefinition, validationName);
     },
 
-    convertableValidation: {
-        value: {
-            required: '$data.Boolean',
-            minValue: true,
-            maxValue: true,
-            minLength: '$data.Integer',
-            maxLength: '$data.Integer',
-            length: '$data.Integer'
-        }
-
-    },
     supportedValidations: {
         value: {
-            //'$data.Entity': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.ObjectID': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.Byte': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.SByte': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Decimal': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Float': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Number': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Int16': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Integer': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Int32': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Int64': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.String': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minLength', 'maxLength', 'length', 'regex']),
-            '$data.Date': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.DateTimeOffset': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Time': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minValue', 'maxValue']),
-            '$data.Boolean': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.Array': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'length']),
-            '$data.Object': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.Guid': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.Blob': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator', 'minLength', 'maxLength', 'length']),
-            '$data.GeographyPoint': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyLineString': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyPolygon': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyMultiPoint': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyMultiLineString': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyMultiPolygon': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeographyCollection': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryPoint': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryLineString': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryPolygon': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryMultiPoint': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryMultiLineString': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryMultiPolygon': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator']),
-            '$data.GeometryCollection': $data.Validation.Defaults._getGroupValidations(['required', 'customValidator'])
+            '$data.Number': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
+                minValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value >= definedValue; },
+                maxValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value <= definedValue; }
+            },
+            '$data.Integer': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
+                minValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value >= definedValue; },
+                maxValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value <= definedValue; }
+            },
+            '$data.String': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
+                minLength: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length >= definedValue; },
+                maxLength: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length <= definedValue; },
+                length: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length == definedValue; },
+                regex: function (value, definedValue) {
+                    return Object.isNullOrUndefined(value) ||
+                        value.match(typeof definedValue === 'string'
+                            ? new RegExp((definedValue.indexOf('/') === 0 && definedValue.lastIndexOf('/') === (definedValue.length - 1)) ? definedValue.slice(1, -1) : definedValue)
+                            : definedValue)
+                }
+            },
+            '$data.Date': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
+                minValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value >= definedValue; },
+                maxValue: function (value, definedValue) { return Object.isNullOrUndefined(value) || value <= definedValue; }
+            },
+            '$data.Boolean':{
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; }
+            },
+            '$data.Array': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; },
+                length: function (value, definedValue) { return Object.isNullOrUndefined(value) || value.length == definedValue; }
+            },
+            '$data.Object': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; }
+            },
+            '$data.Guid': {
+                required: function (value, definedValue) { return !Object.isNullOrUndefined(value); },
+                customValidator: function (value, definedValue) { return Object.isNullOrUndefined(value) || typeof definedValue == "function" ? definedValue(value) : true; }
+            }
         }
     },
 
@@ -9060,10 +8819,6 @@ $data.Class.define('$data.Validation.EntityValidation', $data.Validation.EntityV
                 if (memberDefinition[validation] && validatonGroup[validation] && !validatonGroup[validation].call(entity, value, this.getValidationValue(memberDefinition, validation)))
                     errors.push(this.createValidationError(memberDefinition, validation, 'Validation error!'));
             }, this);
-
-            if (validationTypeName === $data.Entity.fullName && value instanceof $data.Entity && !value.isValid()) {
-                errors.push(this.createValidationError(memberDefinition, 'ComplexProperty', 'Validation error!'));
-            }
         }
     }
 
@@ -9517,11 +9272,7 @@ $data.Entity = Entity = $data.Class.define("$data.Entity", null, null, {
         var result = {};
         var self = this;
         this.getType().memberDefinitions.getPublicMappedProperties().forEach(function (memDef) {
-            if (self[memDef.name] instanceof Date && memDef.type && Container.resolveType(memDef.type) === $data.DateTimeOffset) {
-                result[memDef.name] = new $data.DateTimeOffset(self[memDef.name]);
-            } else {
-                result[memDef.name] = self[memDef.name];
-            }
+            result[memDef.name] = self[memDef.name];
         });
         return result;
     },
@@ -9682,23 +9433,10 @@ $data.Entity = Entity = $data.Class.define("$data.Entity", null, null, {
             return;
         }
 
-        var context = this.context;
-        if (!this.context) {
-            try {
-                var that = this;
-                var storeToken = this.storeToken || this.getType().storeToken;
-                if (storeToken && typeof storeToken.factory === 'function') {
-                    var ctx = storeToken.factory();
-                    return ctx.onReady().then(function (context) {
-                        return context.loadItemProperty(that, memberDefinition, callback);
-                    });
-                }
-            } catch (e) { }
-
+        if (!this.context)
             Guard.raise(new Exception('Entity not in context', 'Invalid operation'));
-        } else {
-            return context.loadItemProperty(this, memberDefinition, callback, tran);
-        }
+
+        return this.context.loadItemProperty(this, memberDefinition, callback, tran);
     },
     // protected
     setProperty: function (memberDefinition, value, callback, tran) {
@@ -9969,14 +9707,6 @@ $data.implementation = function (name) {
 
 
 
-(function () {
-
-    $data.defaults = $data.defaults || {};
-    $data.defaults.defaultDatabaseName = 'JayDataDefault';
-
-})();
-
-
 $data.Class.define('$data.StorageModel', null, null, {
     constructor: function () {
         ///<field name="LogicalType" type="$data.Entity">User defined type</field>
@@ -10029,8 +9759,6 @@ $data.Class.define('$data.EntityContext', null, null,
         if ($data.ItemStore && 'ContextRegister' in $data.ItemStore)
             $data.ItemStore.ContextRegister.apply(this, arguments);
 
-        if (storageProviderCfg.queryCache)
-            this.queryCache = storageProviderCfg.queryCache;
 
         if ("string" === typeof storageProviderCfg) {
             if (0 === storageProviderCfg.indexOf("http")) {
@@ -10069,8 +9797,15 @@ $data.Class.define('$data.EntityContext', null, null,
         }
 
         this._storageModel.getStorageModel = function (typeName) {
-            var name = Container.resolveName(typeName);
-            return ctx._storageModel[name];
+            var resolvedType = Container.resolveType(typeName);
+
+            for (var i = 0; i < ctx._storageModel.length; i++) {
+                var s = ctx._storageModel[i];
+                if (s.LogicalType === resolvedType)
+                    return s;
+            }
+
+            //return ctx._storageModel.filter(function (s) { return s.LogicalType === resolvedType; })[0];
         };
         if (typeof storageProviderCfg.name === 'string') {
             var tmp = storageProviderCfg.name;
@@ -10102,7 +9837,9 @@ $data.Class.define('$data.EntityContext', null, null,
                 if (storageProviderCfg && storageProviderCfg.checkPermission) Object.defineProperty(ctx, 'checkPermission', { value: storageProviderCfg.checkPermission, enumerable: true });
 
                 //ctx._isOK = false;
-                ctx._initializeStore(callBack);
+                if (ctx.storageProvider) {
+                    ctx.storageProvider.initializeStore(callBack);
+                }
             },
             error: function () {
                 callBack.error('Provider fallback failed!');
@@ -10136,16 +9873,7 @@ $data.Class.define('$data.EntityContext', null, null,
         };
 
 
-        this.ready = this.onReady({
-            success: $data.defaultSuccessCallback,
-            error: function () {
-                if ($data.PromiseHandler !== $data.PromiseHandlerBase) {
-                    $data.defaultErrorCallback.apply(this, arguments);
-                } else {
-                    $data.Trace.error(arguments);
-                }
-            }
-        });
+        this.ready = this.onReady();
     },
     beginTransaction: function () {
         var tables = null;
@@ -10222,11 +9950,6 @@ $data.Class.define('$data.EntityContext', null, null,
         }
 
     },
-    _initializeStore: function (callBack) {
-        if (this.storageProvider) {
-            this.storageProvider.initializeStore(callBack);
-        }
-    },
 
     _initStorageModelSync: function() {
         var _memDefArray = this.getType().memberDefinitions.asArray();
@@ -10283,8 +10006,6 @@ $data.Class.define('$data.EntityContext', null, null,
                         storageModel.EventHandlers.afterDelete = item.afterDelete;
                     }
                     this._storageModel.push(storageModel);
-                    var name = Container.resolveName(elementType);
-                    this._storageModel[name] = storageModel;
                 }
             }
         }
@@ -10474,7 +10195,14 @@ $data.Class.define('$data.EntityContext', null, null,
                 Guard.raise(new Exception("Element type definition error", "Field definition", memDef));
             }
         }
-        var refereedStorageModel = this._storageModel.getStorageModel(refereedType);
+        var refereedStorageModel;
+        for (var i = 0; i < this._storageModel.length; i++) {
+            var s = this._storageModel[i];
+            if (s.LogicalType === refereedType) {
+                refereedStorageModel = s;
+                break;
+            }
+        }
         //var refereedStorageModel = this._storageModel.filter(function (s) { return s.LogicalType === refereedType; })[0];
         if (!refereedStorageModel) {
             if (typeof intellisense === 'undefined') {
@@ -10495,7 +10223,14 @@ $data.Class.define('$data.EntityContext', null, null,
                 Guard.raise(new Exception("Element type definition error", "Field definition", memDef));
             }
         }
-        var refereedStorageModel = this._storageModel.getStorageModel(refereedType);
+        var refereedStorageModel;
+        for (var i = 0; i < this._storageModel.length; i++) {
+            var s = this._storageModel[i];
+            if (s.LogicalType === refereedType) {
+                refereedStorageModel = s;
+                break;
+            }
+        }
         //var refereedStorageModel = this._storageModel.filter(function (s) { return s.LogicalType === refereedType; })[0];
         if (!refereedStorageModel) {
             if (typeof intellisense === 'undefined') {
@@ -10516,7 +10251,14 @@ $data.Class.define('$data.EntityContext', null, null,
                 Guard.raise(new Exception("Element type definition error", "Field definition", memDef));
             }
         }
-        var refereedStorageModel = this._storageModel.getStorageModel(refereedType);;
+        var refereedStorageModel;
+        for (var i = 0; i < this._storageModel.length; i++) {
+            var s = this._storageModel[i];
+            if (s.LogicalType === refereedType) {
+                refereedStorageModel = s;
+                break;
+            }
+        }
         //var refereedStorageModel = this._storageModel.filter(function (s) { return s.LogicalType === refereedType; })[0];
         if (!refereedStorageModel) {
             if (typeof intellisense === 'undefined') {
@@ -10657,10 +10399,6 @@ $data.Class.define('$data.EntityContext', null, null,
         var that = this;
         var clbWrapper = {};
         clbWrapper.success = function (query) {
-            if ($data.QueryCache && $data.QueryCache.isCacheable(that, query)) {
-                $data.QueryCache.addToCache(that, query);
-            }
-
             query.buildResultSet(that);
 
             if ($data.ItemStore && 'QueryResultModifier' in $data.ItemStore)
@@ -10669,7 +10407,6 @@ $data.Class.define('$data.EntityContext', null, null,
             var successResult;
 
             if (query.expression.nodeType === $data.Expressions.ExpressionType.Single ||
-                query.expression.nodeType === $data.Expressions.ExpressionType.Find ||
                 query.expression.nodeType === $data.Expressions.ExpressionType.Count ||
                 query.expression.nodeType === $data.Expressions.ExpressionType.BatchDelete ||
                 query.expression.nodeType === $data.Expressions.ExpressionType.Some ||
@@ -10752,19 +10489,11 @@ $data.Class.define('$data.EntityContext', null, null,
 
                 if (ex) {
                     if (query.transaction) {
-                        if ($data.QueryCache && $data.QueryCache.isInCache(that, query)) {
-                            $data.QueryCache.executeQuery(that, query, clbWrapper);
-                        } else {
-                            ctx.storageProvider.executeQuery(query, clbWrapper);
-                        }
+                        ctx.storageProvider.executeQuery(query, clbWrapper);
                     } else {
                         ctx.beginTransaction(function (tran) {
                             query.transaction = tran;
-                            if ($data.QueryCache && $data.QueryCache.isInCache(that, query)) {
-                                $data.QueryCache.executeQuery(that, query, clbWrapper);
-                            } else {
-                                ctx.storageProvider.executeQuery(query, clbWrapper);
-                            }
+                            ctx.storageProvider.executeQuery(query, clbWrapper);
                         });
                     }
                 } else {
@@ -10826,11 +10555,6 @@ $data.Class.define('$data.EntityContext', null, null,
         ///     </param>
         ///     <returns type="$.Deferred" />
         /// </signature>
-
-        if ($data.QueryCache) {
-            $data.QueryCache.reset(this);
-        }
-
         var changedEntities = [];
         var trackedEntities = this.stateManager.trackedEntities;
         var pHandler = new $data.PromiseHandler();
@@ -10958,11 +10682,7 @@ $data.Class.define('$data.EntityContext', null, null,
                                 }
                             }
                             if (!data.entityState) {
-                                if (data.storeToken === this.storeToken) {
-                                    data.entityState = $data.EntityState.Modified;
-                                } else {
-                                    data.entityState = $data.EntityState.Added;
-                                }
+                                data.entityState = $data.EntityState.Added;
                             }
                             if (additionalEntities.indexOf(data) == -1) {
                                 additionalEntities.push(data);
@@ -11043,14 +10763,7 @@ $data.Class.define('$data.EntityContext', null, null,
                         switch (memDefType) {
                             case $data.String:
                             case $data.Number:
-                            case $data.Float:
-                            case $data.Decimal:
                             case $data.Integer:
-                            case $data.Int16:
-                            case $data.Int32:
-                            case $data.Int64:
-                            case $data.Byte:
-                            case $data.SByte:
                             case $data.Date:
                             case $data.Boolean:
                                 entity.data[memDef.name] = Container.getDefault(memDef.dataType);
@@ -11286,32 +10999,6 @@ $data.Class.define('$data.EntityContext', null, null,
         }
     },
 
-    bulkInsert: function (entitySet, fields, datas, callback) {
-        var pHandler = new $data.PromiseHandler();
-        callback = pHandler.createCallback(callback);
-        if (typeof entitySet === 'string') {
-            var currentEntitySet;
-
-            for (var entitySetName in this._entitySetReferences) {
-                var actualEntitySet = this._entitySetReferences[entitySetName];
-                if (actualEntitySet.tableName === entitySet) {
-                    currentEntitySet = actualEntitySet;
-                    break;
-                }
-            }
-
-            if (!currentEntitySet)
-                currentEntitySet = this[entitySet];
-
-            entitySet = currentEntitySet;
-        }
-        if (entitySet) {
-            this.storageProvider.bulkInsert(entitySet, fields, datas, callback);
-        } else {
-            callback.error(new Exception('EntitySet not found'));
-        }
-        return pHandler.getPromise();
-    },
 
     prepareRequest: function () { },
     _postProcessSavedItems: function (callBack, changedEntities, transaction, returnTransaction) {
@@ -11323,9 +11010,6 @@ $data.Class.define('$data.EntityContext', null, null,
         //changedEntities.forEach(function (entity) {
         for (var i = 0; i < changedEntities.length; i++) {
             var entity = changedEntities[i];
-
-            if (!entity.data.storeToken)
-                entity.data.storeToken = ctx.storeToken;
 
             //type after events with items
             this.processEntityTypeAfterEventHandler(entity);
@@ -11912,14 +11596,8 @@ $data.Class.define('$data.QueryProvider', null, null,
                 o[i] = r[i];
             }
         }
-        return this._finalize(o);
-    },
-
-    _finalize: function(o){
-        if (o instanceof $data.Entity) {
+        if (o instanceof $data.Entity)
             o.changedProperties = undefined;
-            o.storeToken = this.context.storeToken;
-        }
         return o;
     },
 
@@ -12021,7 +11699,6 @@ $data.Class.define('$data.QueryProvider', null, null,
         } else if (meta.$item) {
             context.meta.push('$item');
             var iter = (context.item && context.current ? context.item + '.' + context.current : (context.item ? context.item : 'result'));
-            context.iter = iter;
             if (iter.indexOf('.') < 0) context.src += 'var ' + iter + ';';
             context.src += 'var fn = function(di){';
             if (meta.$selector) {
@@ -12044,6 +11721,7 @@ $data.Class.define('$data.QueryProvider', null, null,
             context.src += '}';*/
             context.src += iter + ' = typeof ' + iter + ' == "undefined" ? [] : ' + iter + ';';
             //context.src += iter + ' = [];';
+            context.iter = iter;
             if (this.references && meta.$item.$keys) {
                 var keycacheName = 'keycache_' + iter.replace(/\./gi, '_');
                 context.src += 'var ' + keycacheName + ';';
@@ -12243,7 +11921,12 @@ $data.Class.define('$data.QueryProvider', null, null,
                     }
                 }
             }
-            context.src += item + ' = self._finalize(' + item + ');';
+            if (this.references && meta.$keys) {
+                context.src += 'if (' + item + ' instanceof $data.Entity){' + item + '.changedProperties = undefined;}';
+                //context.src += '}';
+            } else {
+                context.src += 'if (' + item + ' instanceof $data.Entity){' + item + '.changedProperties = undefined;}';
+            }
         }
     },
 
@@ -12638,50 +12321,7 @@ $data.Class.define('$data.Queryable', null, null,
         }
 
         return pHandler.getPromise();
-	},
-	toLiveArray: function (onResult, transaction) {
-	    var self = this;
-	    var result = [];
-
-	    var doAction = function (action) {
-	        return function (onResult) {
-	            var pHandler = new $data.PromiseHandler();
-	            var callback = pHandler.createCallback(onResult);
-
-	            var successFunc = function (res) {
-	                result.length = 0;
-
-	                var data = res;
-	                $data.typeSystem.extend(result, data);
-
-	                result.prev = doAction(function (cb) {
-	                    data.prev(cb);
-	                });
-	                result.next = doAction(function (cb) {
-	                    data.next(cb);
-	                });
-
-	                callback.success.apply(this, [result].concat(Array.prototype.slice.call(arguments, 1)));
-	            }
-
-	            action({
-	                success: successFunc,
-	                error: callback.error
-	            }, transaction);
-
-	            var promise = pHandler.getPromise();
-	            $data.typeSystem.extend(result, promise);
-
-	            return result;
-	        }
-	    }
-
-	    result.refresh = doAction(function (cb) {
-	        self.toArray(cb);
-	    });
-
-	    return result.refresh.apply(result, arguments);
-	},
+    },
 
 	single: function (filterPredicate, thisArg, onResult, transaction) {
 		///	<summary>Filters a set of entities using a boolean expression and returns a single element or throws an error if more than one element is filtered.</summary>
@@ -13036,68 +12676,6 @@ $data.Class.define('$data.Queryable', null, null,
         return pHandler.getPromise();
     },
 
-    find: function (keyValue, onResult, transaction) {
-
-        var pHandler = new $data.PromiseHandler();
-        var cbWrapper = pHandler.createCallback(onResult);
-
-        var keys = this.defaultType.memberDefinitions.getKeyProperties();
-
-        try {
-
-            if (keys.length === 1 && typeof keyValue !== 'object') {
-                var keyV = {};
-                keyV[keys[0].name] = keyValue;
-                keyValue = keyV;
-            }
-
-            if (typeof keyValue !== 'object') {
-                throw new Exception('Key parameter is invalid');
-            } else {
-
-
-                var parameters = [];
-                for (var i = 0; i < keys.length; i++) {
-                    var keyProp = keys[i];
-                    if (!(keyProp.name in keyValue)) {
-                        throw new Exception('Key value missing');
-                    }
-                    parameters.push(Container.createConstantExpression(keyValue[keyProp.name], keyProp.type, keyProp.name));
-                }
-
-                var operation = this.entityContext.storageProvider.supportedSetOperations['find'];
-                if (operation) {
-
-                    var findExpression = Container.createFindExpression(this.expression, parameters);
-                    var preparator = Container.createQueryExpressionCreator(this.entityContext);
-                    try {
-                        var expression = preparator.Visit(findExpression);
-                        this.entityContext.log({ event: "EntityExpression", data: expression });
-
-                        this.entityContext.executeQuery(Container.createQueryable(this, expression), cbWrapper, transaction);
-                    } catch (e) {
-                        cbWrapper.error(e);
-                    }
-
-                } else {
-                    var predicate = '';
-                    var params = {}
-                    for (var i = 0; i < parameters.length; i++) {
-                        var param = parameters[i];
-                        params[param.name] = param.value;
-                        if (i > 0) predicate += ' && ';
-                        predicate += "it." + param.name + " == this." + param.name;
-                    }
-
-                    this.single(predicate, params, cbWrapper, transaction);
-                }
-            }
-        } catch (e) {
-            cbWrapper.error(e);
-        }
-
-        return pHandler.getPromise();
-    },
 
     include: function (selector) {
 		///	<summary>Includes the given entity set in the query if it's an inverse property.</summary>
@@ -13266,6 +12844,14 @@ $data.Class.defineEx('$data.EntitySet',
         for (var i in eventHandlers){
             this[i] = eventHandlers[i];
         }
+    },
+
+
+    find: function(keyValue, cb) {
+        //var callback = $data.typeSystem.createCallbackSetting(cb);
+        //todo multifield key support
+        var key = this.defaultType.memberDefinitions.getKeyProperties()[0];
+        return this.single("it." + key.name + " == this.value", { value: keyValue }, cb);
     },
 
     addNew: function(item, cb) {
@@ -13616,9 +13202,6 @@ $data.Class.defineEx('$data.EntitySet',
     },
     getFieldUrl: function (keys, field) {
         return this.entityContext.getFieldUrl(keys, field, this);
-    },
-    bulkInsert: function (fields, datas, callback) {
-        return this.entityContext.bulkInsert(this, fields, datas, callback);
     }
 }, null);
 $data.EntityState = {
@@ -13822,17 +13405,21 @@ $data.EntityState = {
                 return entitySet;
             });
     },
-    _getDefaultItemStoreFactory: function (instanceOrType, initStoreConfig) {
+    _getDefaultItemStoreFactory: function (instanceOrType, storeConfig) {
         if (instanceOrType) {
             var type = ("function" === typeof instanceOrType) ? instanceOrType : instanceOrType.getType();
             var typeName = $data.Container.resolveName(type) + "_items";
             var typeName = typeName.replace(/\./g, "_");
 
+            var colName = storeConfig ? storeConfig.collectionName : undefined;
             var storeConfig = $data.typeSystem.extend({
-                collectionName: initStoreConfig && initStoreConfig.collectionName ? initStoreConfig.collectionName : 'Items',
+                collectionName: 'Items',
                 tableName: typeName,
                 initParam: { provider: 'local', databaseName: typeName }
-            }, initStoreConfig);
+            }, storeConfig);
+
+            if (storeConfig.tableName && !colName)
+                storeConfig.collectionName = storeConfig.tableName;
 
             var contextDef = {};
             contextDef[storeConfig.collectionName] = { type: $data.EntitySet, elementType: type }
@@ -13840,10 +13427,7 @@ $data.EntityState = {
                 contextDef[storeConfig.collectionName]['tableName'] = storeConfig.tableName;
 
             var inMemoryType = $data.EntityContext.extend(typeName, contextDef);
-            var ctx = new inMemoryType(storeConfig.initParam);
-            if (initStoreConfig && typeof initStoreConfig === 'object')
-                initStoreConfig.factory = ctx._storeToken.factory;
-            return ctx;
+            return new inMemoryType(storeConfig.initParam);
         }
         return undefined;
     },
@@ -14233,7 +13817,7 @@ $data.EntityState = {
                 if (itemResolvedDataType && itemResolvedDataType.isAssignableTo && itemResolvedDataType.isAssignableTo($data.EntitySet)) {
                     var elementType = Container.resolveType(item.elementType);
                     if (!elementType.storeToken) {
-                        elementType.storeToken = this.storeToken;
+                        elementType.storeToken = elementType.storeToken || this.storeToken;
                     }
                 }
             }
@@ -14252,27 +13836,9 @@ $data.EntityState = {
             type = query.modelBinderConfig.$item.$type;
         }
 
-        //TODO: runs when model binding missed (inmemory)
-        if ((typeof type === 'undefined' && query.result && query.result[0] instanceof $data.Entity)) {
-            var navProps = !type ? [] : type.memberDefinitions.getPublicMappedProperties().filter(function (memDef) {
-                return !!memDef.inverseProperty;
-            });
-
+        if ((type && type.isAssignableTo && type.isAssignableTo($data.Entity)) || (typeof type === 'undefined' && query.result && query.result[0] instanceof $data.Entity)) {
             for (var i = 0; i < query.result.length; i++) {
-                self._setStoreAlias(query.result[i], context.storeToken);
-
-                for (var j = 0; j < navProps.length; j++) {
-                    var navProp = navProps[j];
-                    if (query.result[i][navProp.name] instanceof $data.Entity) {
-                        self._setStoreAlias(query.result[i][navProp.name], context.storeToken);
-                    } else if (Array.isArray(query.result[i][navProp.name])) {
-                        for (var k = 0; k < query.result[i][navProp.name].length; k++) {
-                            if (query.result[i][navProp.name][k] instanceof $data.Entity) {
-                                self._setStoreAlias(query.result[i][navProp.name][k], context.storeToken);
-                            }
-                        }
-                    }
-                }
+                self._setStoreAlias(query.result[i], context.storeToken)
             }
         }
     }
@@ -14300,19 +13866,19 @@ $data.Class.define('$data.MemberWrapper', null, null, {
         this.memberDefinition = memberDefinition;
     },
     setKey: function (value) {
-        this.memberDefinition.key = value || value === undefined ? true : false;
+        this.memberDefinition.key = value || true;
         return this;
     },
     setComputed: function (value) {
-        this.memberDefinition.computed = value || value === undefined ? true : false;
+        this.memberDefinition.computed = value || true;
         return this;
     },
     setRequired: function (value) {
-        this.memberDefinition.required = value || value === undefined ? true : false;
+        this.memberDefinition.required = value || true;
         return this;
     },
     setNullable: function (value) {
-        this.memberDefinition.nullable = value || value === undefined ? true : false;
+        this.memberDefinition.nullable = value || true;
         return this;
     },
     changeDefinition: function (attr, value) {
@@ -14485,7 +14051,7 @@ $data.Class.define('$data.StorageProviderLoaderBase', null, null, {
         function getHttpRequest() {
             if (window.XMLHttpRequest)
                 return new XMLHttpRequest();
-            else if (window.ActiveXObject !== undefined)
+            else if (window.ActiveXObject)
                 return new ActiveXObject("MsXml2.XmlHttp");
             else{
                 $data.Trace.log('XMLHttpRequest or MsXml2.XmlHttp ActiveXObject not found');
@@ -14620,10 +14186,6 @@ $data.Class.define('$data.StorageProviderBase', null, null,
 
     executeQuery: function (queryable, callBack) {
         Guard.raise("Pure class");
-    },
-    loadRawData: function (tableName, callBack) {
-        callBack = $data.typeSystem.createCallbackSetting(callBack);
-        callBack.error(new Exception('loadRawData is not supported', 'Invalid Operation'));
     },
 
     buildIndependentBlocks: function (changedItems) {
@@ -14872,10 +14434,6 @@ $data.Class.define('$data.StorageProviderBase', null, null,
             }
             return dbInstance;
         };
-    },
-
-    bulkInsert: function (a, b, c, callback) {
-        callback.error(new Exception('Not Implemented'));
     },
 
     supportedFieldOperations: {
@@ -15292,9 +14850,6 @@ $C('$data.modelBinder.ModelBinderConfigCompiler', $data.Expressions.EntityExpres
         this._defaultModelBinder(expression);
     },
     VisitSomeExpression: function (expression) {
-        this._defaultModelBinder(expression);
-    },
-    VisitFindExpression: function (expression) {
         this._defaultModelBinder(expression);
     },
     VisitEveryExpression: function (expression) {
@@ -15853,12 +15408,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             user: undefined,
             password: undefined,
             withCredentials: undefined,
-            httpHeaders: undefined,
-
-            typeFilter: '',
-            navigation: true,
-            generateKeys: true,
-            dependentRelationsOnly: false
+            httpHeaders: undefined
         };
 
         $data.typeSystem.extend( cnf, config || {});
@@ -15916,7 +15466,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
                     text = text.replace('xmlns:edm="@@VERSIONNS@@"', 'xmlns:edm="' + versionInfo.ns + '"');
                     text = text.replace('@@VERSION@@', versionInfo.version);
 
-                    if (window.ActiveXObject === undefined) {
+                    if (typeof ActiveXObject === 'undefined') {
                         var parser = new DOMParser();
                         xsl = parser.parseFromString(text, "text/xml");
                     } else {
@@ -15989,43 +15539,6 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
         }
     },
     _loadXMLDoc: function (cnf, callback) {
-        var that = this;
-        if ($data.postMessageODataHandler) {
-
-            if (cnf.user && cnf.password && (!cnf.httpHeaders || (cnf.httpHeaders && !cnf.httpHeaders['Authorization']))) {
-                httpHeader = httpHeader || {};
-                httpHeader["Authorization"] = "Basic " + this.__encodeBase64(cnf.user + ":" + cnf.password);
-            }
-
-            $data.postMessageODataHandler.requestProxy({
-                url: cnf.metadataUri,
-                httpHeaders: cnf.httpHeaders,
-                success: function (response) {
-                    var doc;
-                    if (typeof module !== 'undefined' && typeof require !== 'undefined') {
-                        doc = response.responseText;
-                    } else if (window.ActiveXObject) {
-                        doc = new ActiveXObject('Microsoft.XMLDOM');
-                        doc.async = 'false';
-                        doc.loadXML(response.responseText);
-                    } else {
-                        var parser = new DOMParser();
-                        doc = parser.parseFromString(response.responseText, 'text/xml');
-                    }
-
-                    callback(doc, response);
-                },
-                error: function (e) {
-                    that._loadXHTTP_XMLDoc(cnf, callback);
-                }
-
-            });
-
-        } else {
-            this._loadXHTTP_XMLDoc(cnf, callback);
-        }
-    },
-    _loadXHTTP_XMLDoc: function (cnf, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", cnf.metadataUri, true);
         if (cnf.httpHeaders) {
@@ -16047,9 +15560,8 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
     },
     _processResults: function (metadataUri, versionInfo, metadata, xsl, cnf) {
         var transformXslt = this.getCurrentXSLTVersion(versionInfo, metadata);
-        cnf.typeFilter = this._prepareTypeFilter(metadata, versionInfo, cnf);
 
-        if (window.ActiveXObject !== undefined) {
+        if (window.ActiveXObject) {
             var xslt = new ActiveXObject("Msxml2.XSLTemplate.6.0");
             var xsldoc = new ActiveXObject("Msxml2.FreeThreadedDOMDocument.6.0");
             var xslproc;
@@ -16080,8 +15592,6 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
                     xslproc.addParameter('CollectionBaseClass', cnf.CollectionBaseClass);
                     xslproc.addParameter('DefaultNamespace', cnf.DefaultNamespace);
                     xslproc.addParameter('MaxDataserviceVersion', versionInfo.maxVersion || '3.0');
-                    xslproc.addParameter('AllowedTypesList', cnf.typeFilter);
-                    xslproc.addParameter('GenerateNavigationProperties', cnf.navigation);
 
                     xslproc.transform();
                     return xslproc.output;
@@ -16108,8 +15618,6 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             xsltProcessor.setParameter(null, 'CollectionBaseClass', cnf.CollectionBaseClass);
             xsltProcessor.setParameter(null, 'DefaultNamespace', cnf.DefaultNamespace);
             xsltProcessor.setParameter(null, 'MaxDataserviceVersion', versionInfo.maxVersion || '3.0');
-            xsltProcessor.setParameter(null, 'AllowedTypesList', cnf.typeFilter);
-            xsltProcessor.setParameter(null, 'GenerateNavigationProperties', cnf.navigation);
             resultDocument = xsltProcessor.transformToFragment(metadata, document);
 
             return resultDocument.textContent;
@@ -16125,278 +15633,10 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
                 'EntitySetBaseClass', "'" + cnf.EntitySetBaseClass + "'",
                 'CollectionBaseClass', "'" + cnf.CollectionBaseClass + "'",
                 'DefaultNamespace', "'" + cnf.DefaultNamespace + "'",
-                'MaxDataserviceVersion', "'" + (versionInfo.maxVersion || '3.0') + "'",
-                'AllowedTypesList', "'" + cnf.typeFilter + "'",
-                'GenerateNavigationProperties', "'" + cnf.navigation + "'"
+                'MaxDataserviceVersion', "'" + (versionInfo.maxVersion || '3.0') + "'"
             ]);
         }
     },
-    _prepareTypeFilter: function (doc, versionInfo, cnf) {
-        var result = '';
-        if (!(typeof doc === 'object' && "querySelector" in doc && "querySelectorAll" in doc))
-            return result;
-
-        var config = [];
-        if (typeof cnf.typeFilter === 'object' && cnf.typeFilter) {
-            var types = Object.keys(cnf.typeFilter);
-            for (var i = 0; i < types.length; i++) {
-                var cfg = cnf.typeFilter[types[i]];
-                var typeData = {};
-                if (typeof cfg === 'object' && cfg) {
-                    if (Array.isArray(cfg)) {
-                        typeData.Name = types[i];
-                        typeData.Fields = cfg;
-                    } else {
-                        typeData.Name = cfg.name || types[i];
-                        typeData.Fields = cfg.members || [];
-                    }
-                } else if (cfg) {
-                    typeData.Name = types[i];
-                    typeData.Fields = [];
-                } else {
-                    continue;
-                }
-
-                var typeShortName = typeData.Name;
-                var containerName = "";
-                if (typeData.Name.lastIndexOf('.') > 0)
-                {
-                    containerName = typeData.Name.substring(0, typeData.Name.lastIndexOf('.'));
-                    typeShortName = typeData.Name.substring(typeData.Name.lastIndexOf('.') + 1);
-                }
-
-                var conainers = doc.querySelectorAll("EntityContainer[Name = '" + containerName + "']");
-                for (var j = 0; j < conainers.length; j++) {
-                    var entitySetDef = conainers[j].querySelector("EntitySet[Name = '" + typeShortName + "']");
-                    if (entitySetDef != null)
-                    {
-                        typeData.Name = entitySetDef.attributes["EntityType"].value;
-                        break;
-                    }
-
-                }
-
-                config.push(typeData);
-            }
-
-            var discoveredData;
-            if (cnf.dependentRelationsOnly) {
-                discoveredData = this._discoverProperyDependencies(config, doc, cnf.navigation, cnf.generateKeys);
-            } else {
-                discoveredData = this._discoverTypeDependencies(config, doc, cnf.navigation, cnf.generateKeys);
-            }
-
-            var complex = doc.querySelectorAll("ComplexType");
-            for (var i = 0; i < complex.length; i++)
-            {
-                var cns = complex[i].parentNode.attributes["Namespace"].value;
-                var data = !cns ? complex[i].attributes["Name"].value : (cns + "." + complex[i].attributes["Name"].value);
-                discoveredData.push({ Name: data, Fields: [] });
-            }
-
-            for (var i = 0; i < discoveredData.length; i++)
-            {
-                var row = discoveredData[i];
-                if (row.Fields.length > 0) {
-                    result += row.Name + ":" + row.Fields.join(",") + ";";
-                }
-                else {
-                    result += row.Name + ";";
-                }
-            }
-
-        }
-
-        return result;
-    },
-    _discoverTypeDependencies: function (types, doc, withNavPropertis, withKeys) {
-        var allowedTypes = [];
-        var allowedTypeNames = [];
-        var collect = [];
-
-        for (var i = 0; i < types.length; i++)
-        {
-            var idx = collect.indexOf(types[i].Name);
-            if(idx >= 0){
-                collect.splice(idx, 1);
-            }
-            this._discoverType(types[i], doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys, true, collect);
-        }
-
-        for (var i = 0; i < collect.length; i++)
-        {
-            this._discoverType({ Name: collect[i], Fields: [] }, doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys, false, []);
-        }
-
-        return allowedTypes;
-    },
-    _discoverType: function(typeData, doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys, collectTypes, collectedTypes) {
-        var typeName = typeData.Name;
-
-        if (allowedTypeNames.indexOf(typeName) >= 0)
-        {
-            return;
-        }
-        console.log("Discover: " + typeName);
-
-        var typeShortName = typeName;
-        var typeNamespace = '';
-        if (typeName.lastIndexOf('.') > 0)
-        {
-            typeNamespace = typeName.substring(0, typeName.lastIndexOf('.'));
-            typeShortName = typeName.substring(typeName.lastIndexOf('.') + 1);
-        }
-
-        var schemaNode = doc.querySelector("Schema[Namespace = '" + typeNamespace + "']");
-        if (schemaNode != null)
-        {
-            var typeNode = schemaNode.querySelector("EntityType[Name = '" + typeShortName + "'], ComplexType[Name = '" + typeShortName + "']");
-            if (typeNode != null)
-            {
-                allowedTypes.push(typeData);
-                allowedTypeNames.push(typeName);
-
-                if (withKeys && typeData.Fields.length > 0) {
-                    var keys = typeNode.querySelectorAll("Key PropertyRef");
-                    if (keys != null)
-                    {
-                        for (var j = 0; j < keys.length; j++)
-                        {
-                            var keyField = keys[j].attributes["Name"].value;
-                            if (typeData.Fields.indexOf(keyField) < 0)
-                                typeData.Fields.splice(j, 0, keyField);
-                        }
-                    }
-                }
-
-                if (withNavPropertis)
-                {
-                    var navPropNodes = typeNode.querySelectorAll("NavigationProperty");
-                    for (var j = 0; j < navPropNodes.length; j++)
-                    {
-                        var navProp = navPropNodes[j];
-                        if (typeData.Fields.length == 0 || typeData.Fields.indexOf(navProp.attributes["Name"].value) >=0)
-                        {
-
-                            var FromRole = navProp.attributes["FromRole"].value;
-                            var ToRole = navProp.attributes["ToRole"].value;
-
-                            var association = schemaNode.querySelector("Association End[Role = '" + FromRole + "']:not([Type = '" + typeName + "'])");
-                            if (association == null)
-                            {
-                                association = schemaNode.querySelector("Association End[Role = '" + ToRole + "']:not([Type = '" + typeName + "'])");
-                            }
-
-                            if (association != null)
-                            {
-                                var nav_type = association.attributes["Type"].value;
-
-                                if (collectTypes)
-                                {
-                                    if (collectedTypes.indexOf(nav_type) < 0 && allowedTypeNames.indexOf(nav_type) < 0)
-                                        collectedTypes.push(nav_type);
-                                }
-                                else
-                                {
-                                    this._discoverType({ Name: nav_type, Fields: [] }, doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys, false, collectedTypes);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-
-    _discoverProperyDependencies: function (types, doc, withNavPropertis, withKeys) {
-        var allowedTypes = [];
-        var allowedTypeNames = types.map(function(t) { return t.Name; });
-
-        for (var i = 0; i < types.length; i++)
-        {
-            this._discoverProperties(types[i], doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys);
-        }
-
-        return allowedTypes;
-    },
-    _discoverProperties: function(typeData, doc, allowedTypes, allowedTypeNames, withNavPropertis, withKeys) {
-        var typeName = typeData.Name;
-        console.log("Discover: " + typeName);
-
-        var hasProperty = typeData.Fields.length != 0;
-        var typeShortName = typeName;
-        var typeNamespace = '';
-        if (typeName.lastIndexOf('.') > 0)
-        {
-            typeNamespace = typeName.substring(0, typeName.lastIndexOf('.'));
-            typeShortName = typeName.substring(typeName.lastIndexOf('.') + 1);
-        }
-
-        var schemaNode = doc.querySelector("Schema[Namespace = '" + typeNamespace + "']");
-        if (schemaNode != null)
-        {
-            var typeNode = schemaNode.querySelector("EntityType[Name = '" + typeShortName + "'], ComplexType[Name = '" + typeShortName + "']");
-            if (typeNode != null)
-            {
-                allowedTypes.push(typeData);
-
-                if (!hasProperty)
-                {
-                    var properties = typeNode.querySelectorAll("Property");
-                    if (properties != null)
-                    {
-                        for (var j = 0; j < properties.length; j++)
-                        {
-                            var field = properties[j].attributes["Name"].value;
-                            typeData.Fields.push(field);
-                        }
-                    }
-
-                    if (withNavPropertis)
-                    {
-                        var navPropNodes = typeNode.querySelectorAll("NavigationProperty");
-                        for (var j = 0; j < navPropNodes.length; j++)
-                        {
-                            var navProp = navPropNodes[j];
-                            var nav_name = navProp.attributes["Name"].value;
-                            var types = [ navProp.attributes["FromRole"].value, navProp.attributes["ToRole"].value ];
-
-                            var nav_type = '';
-                            for (var t = 0; t < types.length; t++)
-                            {
-                                var association = schemaNode.querySelector("Association End[Role = '" + types[t] + "']");
-                                if (association != null)
-                                {
-                                    nav_type = association.attributes["Type"].value;
-                                    if (nav_type != typeName || t == 1)
-                                        break;
-                                }
-                            }
-
-                            if (allowedTypeNames.indexOf(nav_type) >= 0)
-                            {
-                                typeData.Fields.push(nav_name);
-                            }
-                        }
-                    }
-                }
-                else if (withKeys)
-                {
-                    var keys = typeNode.querySelectorAll("Key PropertyRef");
-                    if (keys != null)
-                    {
-                        for (var j = 0; j < keys.length; j++)
-                        {
-                            var keyField = keys[j].attributes["Name"].value;
-                            if (typeData.Fields.indexOf(keyField) < 0)
-                                typeData.Fields.splice(j, 0, keyField);
-                        }
-                    }
-                }
-            }
-        }
-    },
-
     _findVersion: function (metadata) {
         var maxDSVersion = '';
 
@@ -16456,10 +15696,10 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
     },
     _maxDataServiceVersions: {
         value: {
-            "http://schemas.microsoft.com/ado/2006/04/edm": "2.0",
+            "http://schemas.microsoft.com/ado/2006/04/edm": "1.0",
             "http://schemas.microsoft.com/ado/2008/09/edm": "2.0",
             "http://schemas.microsoft.com/ado/2009/11/edm": "3.0",
-            "http://schemas.microsoft.com/ado/2007/05/edm": "2.0",
+            "http://schemas.microsoft.com/ado/2007/05/edm": "1.0",
             "http://schemas.microsoft.com/ado/2009/08/edm": "2.0"
         }
     },
@@ -16537,119 +15777,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             "  <xsl:param name=\"CollectionBaseClass\"/>\r\n" +
             "  <xsl:param name=\"DefaultNamespace\"/>\r\n" +
             "  <xsl:param name=\"MaxDataserviceVersion\"/>\r\n" +
-            "  <xsl:param name=\"AllowedTypesList\" />\r\n" +
-            "  <xsl:param name=\"GenerateNavigationProperties\" />\r\n" +
             "\r\n" +
-            "  <xsl:param name=\"AllowedTypesListX\">Microsoft.Crm.Sdk.Data.Services.Product;Microsoft.Crm.Sdk.Data.Services.LeadAddress:Telephone1,City,UTCOffset;</xsl:param>\r\n" +
-            "\r\n" +
-            "  <xsl:variable name=\"fullmetadata\" select=\"/\" />\r\n" +
-            "  \r\n" +
-            "  <xsl:template name=\"createFieldsList\">\r\n" +
-            "    <xsl:param name=\"fields\" />\r\n" +
-            "    <!--<xsl:message terminate=\"no\">\r\n" +
-            "      create field: @<xsl:value-of select=\"$fields\"/>@\r\n" +
-            "    </xsl:message>-->\r\n" +
-            "      <xsl:variable name=\"thisField\">\r\n" +
-            "        <xsl:choose>\r\n" +
-            "          <xsl:when test=\"contains($fields,',')\">\r\n" +
-            "            <xsl:value-of select=\"substring-before($fields, ',')\"/>\r\n" +
-            "          </xsl:when>\r\n" +
-            "          <xsl:otherwise>\r\n" +
-            "            <xsl:value-of select=\"$fields\"/>\r\n" +
-            "          </xsl:otherwise>\r\n" +
-            "        </xsl:choose>\r\n" +
-            "      </xsl:variable>\r\n" +
-            "      <xsl:element name=\"field\">\r\n" +
-            "        <xsl:attribute name=\"name\">\r\n" +
-            "          <xsl:value-of select=\"$thisField\"/>\r\n" +
-            "        </xsl:attribute> \r\n" +
-            "      </xsl:element>\r\n" +
-            "      <xsl:variable name=\"remaining\" select=\"substring($fields, string-length($thisField) + 2)\" />\r\n" +
-            "      <xsl:if test=\"string-length($remaining) > 0\">\r\n" +
-            "        <xsl:call-template name=\"createFieldsList\">\r\n" +
-            "          <xsl:with-param name=\"fields\" select=\"$remaining\" />\r\n" +
-            "        </xsl:call-template>\r\n" +
-            "      </xsl:if>\r\n" +
-            "  </xsl:template>\r\n" +
-            "\r\n" +
-            "  <xsl:template name=\"createType\">\r\n" +
-            "    <xsl:param name=\"typeFull\" />\r\n" +
-            "    <!--<xsl:message terminate=\"no\">\r\n" +
-            "      create type: <xsl:value-of select=\"$typeFull\"/>\r\n" +
-            "    </xsl:message>-->\r\n" +
-            "    <xsl:variable name=\"typeName\">\r\n" +
-            "      <xsl:choose>\r\n" +
-            "        <xsl:when test=\"contains($typeFull,':')\">\r\n" +
-            "          <xsl:value-of select=\"substring-before($typeFull, ':') \"/>\r\n" +
-            "        </xsl:when>\r\n" +
-            "        <xsl:otherwise>\r\n" +
-            "          <xsl:value-of select=\"$typeFull\"/>\r\n" +
-            "        </xsl:otherwise>\r\n" +
-            "      </xsl:choose>\r\n" +
-            "    </xsl:variable>\r\n" +
-            "    <xsl:variable name=\"fields\" select=\"substring($typeFull, string-length($typeName) + 2)\" />\r\n" +
-            "    <xsl:element name=\"type\">\r\n" +
-            "      <xsl:attribute name=\"name\">\r\n" +
-            "        <xsl:value-of select=\"$typeName\"/>\r\n" +
-            "      </xsl:attribute>\r\n" +
-            "      <xsl:if test=\"string-length($fields) > 0\">\r\n" +
-            "        <xsl:call-template name=\"createFieldsList\">\r\n" +
-            "          <xsl:with-param name=\"fields\" select=\"$fields\" />\r\n" +
-            "        </xsl:call-template>\r\n" +
-            "      </xsl:if>\r\n" +
-            "    </xsl:element>\r\n" +
-            "  </xsl:template>\r\n" +
-            "  \r\n" +
-            "  <xsl:template name=\"createTypeList\">\r\n" +
-            "    <xsl:param name=\"types\" />\r\n" +
-            "    <!--<xsl:message terminate=\"no\">\r\n" +
-            "      createTypeList: <xsl:value-of select=\"$types\"/>\r\n" +
-            "    </xsl:message>-->\r\n" +
-            "        \r\n" +
-            "    <xsl:variable name=\"thisTypeFull\">\r\n" +
-            "      <xsl:choose>\r\n" +
-            "        <xsl:when test=\"contains($types, ';')\">\r\n" +
-            "          <xsl:value-of select=\"substring-before($types, ';')\"/>\r\n" +
-            "        </xsl:when>\r\n" +
-            "        <xsl:otherwise>\r\n" +
-            "          <xsl:value-of select=\"$types\"/>\r\n" +
-            "        </xsl:otherwise>\r\n" +
-            "      </xsl:choose>\r\n" +
-            "    </xsl:variable>\r\n" +
-            "\r\n" +
-            "    <xsl:if test=\"string-length($thisTypeFull) > 0\">\r\n" +
-            "      <xsl:call-template name=\"createType\">\r\n" +
-            "        <xsl:with-param name=\"typeFull\" select=\"$thisTypeFull\" />\r\n" +
-            "      </xsl:call-template>\r\n" +
-            "    </xsl:if>\r\n" +
-            "    \r\n" +
-            "    <xsl:variable name=\"remaining\" select=\"substring($types, string-length($thisTypeFull) + 2)\" />\r\n" +
-            "    <!--<xsl:message terminate=\"no\">\r\n" +
-            "      rem: @<xsl:value-of select=\"$remaining\"/>@  \r\n" +
-            "    </xsl:message>-->\r\n" +
-            "    \r\n" +
-            "    <xsl:if test=\"string-length($remaining) > 0\">\r\n" +
-            "      <xsl:call-template name=\"createTypeList\">\r\n" +
-            "        <xsl:with-param name=\"types\" select=\"$remaining\" />\r\n" +
-            "      </xsl:call-template>\r\n" +
-            "    </xsl:if>\r\n" +
-            "  </xsl:template>\r\n" +
-            "\r\n" +
-            "  <xsl:variable name=\"allowedTypes\">\r\n" +
-            "    <xsl:call-template name=\"createTypeList\">\r\n" +
-            "      <xsl:with-param name=\"types\" select=\"$AllowedTypesList\" />\r\n" +
-            "    </xsl:call-template>\r\n" +
-            "  </xsl:variable>\r\n" +
-            "  \r\n" +
-            "\r\n" +
-            "<!-- TODO EXSLT node-set -->\r\n" +
-            "  <!--<xsl:variable name=\"hasTypeFilter\" select=\"boolean(count(msxsl:node-set($allowedTypes)/type) > 0)\"/>-->\r\n" +
-            "  <xsl:variable name=\"hasTypeFilter\">\r\n" +
-            "    <xsl:choose>\r\n" +
-            "      <xsl:when test=\"function-available('msxsl:node-set')\"><xsl:value-of select=\"boolean(count(msxsl:node-set($allowedTypes)/type) > 0)\"/></xsl:when>\r\n" +
-            "      <xsl:otherwise><xsl:value-of select=\"boolean(count(exsl:node-set($allowedTypes)/type) > 0)\"/></xsl:otherwise>\r\n" +
-            "    </xsl:choose>\r\n" +
-            "  </xsl:variable>\r\n" +
             "  <xsl:template match=\"/\">\r\n" +
             "\r\n" +
             "/*//////////////////////////////////////////////////////////////////////////////////////\r\n" +
@@ -16658,143 +15786,51 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             "//////////////////////////////////////////////////////////////////////////////////////*/\r\n" +
             "(function(global, $data, undefined) {\r\n" +
             "\r\n" +
-            "    \r\n" +
             "<xsl:for-each select=\"//edm:EntityType | //edm:ComplexType\" xml:space=\"default\">\r\n" +
-            "  <xsl:variable name=\"thisName\" select=\"concat(../@Namespace, '.', @Name)\" />\r\n" +
-            "  <!-- TODO EXSLT node-set-->\r\n" +
-            "  <!--<xsl:variable name=\"thisTypeNode\" select=\"msxsl:node-set($allowedTypes)/type[@name = $thisName]\" />-->\r\n" +
-            "  <xsl:variable name=\"thisTypeNode\">\r\n" +
+            "  <xsl:message terminate=\"no\">Info: generating type <xsl:value-of select=\"concat(../@Namespace, '.', @Name)\"/>\r\n" +
+            "</xsl:message>\r\n" +
+            "  <xsl:variable name=\"BaseType\">\r\n" +
             "    <xsl:choose>\r\n" +
-            "      <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "        <xsl:copy-of select=\"msxsl:node-set($allowedTypes)/type[@name = $thisName]\"/>\r\n" +
+            "      <xsl:when test=\"@BaseType\">\r\n" +
+            "        <xsl:value-of select=\"@BaseType\"/>\r\n" +
             "      </xsl:when>\r\n" +
             "      <xsl:otherwise>\r\n" +
-            "        <xsl:copy-of select=\"exsl:node-set($allowedTypes)/type[@name = $thisName]\"/>\r\n" +
+            "        <xsl:value-of select=\"$EntityBaseClass\"  />\r\n" +
             "      </xsl:otherwise>\r\n" +
             "    </xsl:choose>\r\n" +
             "  </xsl:variable>\r\n" +
-            "  <xsl:variable name=\"thisTypeNodeExists\">\r\n" +
-            "    <xsl:choose>\r\n" +
-            "      <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "        <xsl:copy-of select=\"(count(msxsl:node-set($allowedTypes)/type[@name = $thisName]) > 0)\"/>\r\n" +
-            "      </xsl:when>\r\n" +
-            "      <xsl:otherwise>\r\n" +
-            "        <xsl:copy-of select=\"(count(exsl:node-set($allowedTypes)/type[@name = $thisName]) > 0)\"/>\r\n" +
-            "      </xsl:otherwise>\r\n" +
-            "    </xsl:choose>\r\n" +
+            "  <xsl:variable name=\"props\">\r\n" +
+            "    <xsl:apply-templates select=\"*\" />\r\n" +
             "  </xsl:variable>\r\n" +
-            "  <!--<xsl:variable name=\"filterFields\" select=\"(count($thisTypeNode/field) > 0)\" />-->\r\n" +
-            "  <xsl:variable name=\"filterFields\">\r\n" +
-            "    <xsl:choose>\r\n" +
-            "      <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "        <xsl:copy-of select=\"(count(msxsl:node-set($thisTypeNode)/type/field) > 0)\"/>\r\n" +
-            "      </xsl:when>\r\n" +
-            "      <xsl:otherwise>\r\n" +
-            "        <xsl:copy-of select=\"(count(exsl:node-set($thisTypeNode)/type/field) > 0)\"/>\r\n" +
-            "      </xsl:otherwise>\r\n" +
+            "  <xsl:text xml:space=\"preserve\">  </xsl:text><xsl:value-of select=\"$BaseType\"  />.extend('<xsl:value-of select=\"concat($DefaultNamespace,../@Namespace)\"/>.<xsl:value-of select=\"@Name\"/>', {\r\n" +
+            "    <xsl:choose><xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
+            "    <xsl:for-each select=\"msxsl:node-set($props)/*\">\r\n" +
+            "      <xsl:value-of select=\".\"/><xsl:if test=\"position() != last()\">,\r\n" +
+            "    </xsl:if></xsl:for-each>\r\n" +
+            "  </xsl:when>\r\n" +
+            "  <xsl:otherwise>\r\n" +
+            "    <xsl:for-each select=\"exsl:node-set($props)/*\">\r\n" +
+            "      <xsl:value-of select=\".\"/><xsl:if test=\"position() != last()\">,\r\n" +
+            "    </xsl:if></xsl:for-each>\r\n" +
+            "    </xsl:otherwise>\r\n" +
             "    </xsl:choose>\r\n" +
-            "  </xsl:variable>\r\n" +
-            "  <xsl:if test=\"($hasTypeFilter = 'false') or ($thisTypeNodeExists = 'true')\">\r\n" +
-            "\r\n" +
-            "      <xsl:message terminate=\"no\">Info: generating type <xsl:value-of select=\"concat(../@Namespace, '.', @Name)\"/></xsl:message>\r\n" +
-            "    \r\n" +
-            "      <xsl:variable name=\"BaseType\">\r\n" +
-            "        <xsl:choose>\r\n" +
-            "          <xsl:when test=\"@BaseType\">\r\n" +
-            "            <xsl:value-of select=\"concat($DefaultNamespace,@BaseType)\"/>\r\n" +
-            "          </xsl:when>\r\n" +
-            "          <xsl:otherwise>\r\n" +
-            "            <xsl:value-of select=\"$EntityBaseClass\"  />\r\n" +
-            "          </xsl:otherwise>\r\n" +
-            "        </xsl:choose>\r\n" +
-            "      </xsl:variable>\r\n" +
-            "\r\n" +
-            "\r\n" +
-            "     <xsl:variable name=\"props\">\r\n" +
-            "       <xsl:for-each select=\"*[local-name() != 'NavigationProperty' or ($GenerateNavigationProperties = 'true' and local-name() = 'NavigationProperty')]\">\r\n" +
-            "         <xsl:variable name=\"fname\" select=\"@Name\" />\r\n" +
-            "         <xsl:variable name=\"isAllowedField\">\r\n" +
-            "           <xsl:choose>\r\n" +
-            "             <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "               <xsl:copy-of select=\"(count(msxsl:node-set($thisTypeNode)/type/field[@name = $fname]) > 0)\"/>\r\n" +
-            "             </xsl:when>\r\n" +
-            "             <xsl:otherwise>\r\n" +
-            "               <xsl:copy-of select=\"(count(exsl:node-set($thisTypeNode)/type/field[@name = $fname]) > 0)\"/>\r\n" +
-            "             </xsl:otherwise>\r\n" +
-            "           </xsl:choose>\r\n" +
-            "         </xsl:variable>\r\n" +
-            "         <xsl:if test=\"($filterFields = 'false') or ($isAllowedField = 'true')\">\r\n" +
-            "           <xsl:apply-templates select=\".\" />\r\n" +
-            "         </xsl:if> \r\n" +
-            "       </xsl:for-each>\r\n" +
-            "      </xsl:variable>\r\n" +
-            "    \r\n" +
-            "      <xsl:text xml:space=\"preserve\">  </xsl:text><xsl:value-of select=\"$BaseType\"  />.extend('<xsl:value-of select=\"concat($DefaultNamespace,../@Namespace)\"/>.<xsl:value-of select=\"@Name\"/>', {\r\n" +
-            "     <xsl:choose>\r\n" +
-            "        <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "          <xsl:for-each select=\"msxsl:node-set($props)/*\">\r\n" +
-            "            <xsl:value-of select=\".\"/>\r\n" +
-            "            <xsl:if test=\"position() != last()\">\r\n" +
-            "            <xsl:text>,&#10;     </xsl:text>  \r\n" +
-            "            </xsl:if>\r\n" +
-            "          </xsl:for-each>\r\n" +
-            "        </xsl:when>\r\n" +
-            "        <xsl:otherwise>\r\n" +
-            "          <xsl:for-each select=\"exsl:node-set($props)/*\">\r\n" +
-            "            <xsl:value-of select=\".\"/>\r\n" +
-            "            <xsl:if test=\"position() != last()\">,&#10;     </xsl:if>\r\n" +
-            "          </xsl:for-each>\r\n" +
-            "        </xsl:otherwise>\r\n" +
-            "      </xsl:choose>\r\n" +
-            "      <xsl:variable name=\"currentName\"><xsl:value-of select=\"concat(../@Namespace,'.',@Name)\"/></xsl:variable>\r\n" +
-            "      <xsl:for-each select=\"//edm:FunctionImport[@IsBindable and edm:Parameter[1]/@Type = $currentName]\"><xsl:if test=\"position() = 1\">,\r\n" +
-            "      </xsl:if>\r\n" +
-            "        <xsl:apply-templates select=\".\"></xsl:apply-templates><xsl:if test=\"position() != last()\">,\r\n" +
-            "      </xsl:if>\r\n" +
-            "      </xsl:for-each>\r\n" +
+            "    <xsl:variable name=\"currentName\"><xsl:value-of select=\"concat(../@Namespace,'.',@Name)\"/></xsl:variable>\r\n" +
+            "    <xsl:for-each select=\"//edm:FunctionImport[@IsBindable and edm:Parameter[1]/@Type = $currentName]\"><xsl:if test=\"position() = 1\">,\r\n" +
+            "    </xsl:if>\r\n" +
+            "      <xsl:apply-templates select=\".\"></xsl:apply-templates><xsl:if test=\"position() != last()\">,\r\n" +
+            "    </xsl:if>\r\n" +
+            "    </xsl:for-each>\r\n" +
             "  });\r\n" +
-            "\r\n" +
-            "</xsl:if>\r\n" +
+            "  \r\n" +
             "</xsl:for-each>\r\n" +
             "\r\n" +
             "<xsl:for-each select=\"//edm:EntityContainer\">\r\n" +
             "  <xsl:text xml:space=\"preserve\">  </xsl:text><xsl:value-of select=\"$ContextBaseClass\"  />.extend('<xsl:value-of select=\"concat(concat($DefaultNamespace,../@Namespace), '.', @Name)\"/>', {\r\n" +
-            "     <!--or (@IsBindable = 'true' and (@IsAlwaysBindable = 'false' or @m:IsAlwaysBindable = 'false' or @metadata:IsAlwaysBindable = 'false'))-->\r\n" +
-            "\r\n" +
-            "   <xsl:variable name=\"subset\">\r\n" +
-            "    <xsl:for-each select=\"edm:EntitySet | edm:FunctionImport\">\r\n" +
-            "      <xsl:choose>\r\n" +
-            "        <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "          <xsl:if test=\"($hasTypeFilter = 'false') or msxsl:node-set($allowedTypes)/type[@name = current()/@EntityType]\">\r\n" +
-            "            <xsl:copy-of select=\".\"/>\r\n" +
-            "          </xsl:if>\r\n" +
-            "        </xsl:when>\r\n" +
-            "        <xsl:otherwise>\r\n" +
-            "          <xsl:if test=\"($hasTypeFilter = 'false') or exsl:node-set($allowedTypes)/type[@name = current()/@EntityType]\">\r\n" +
-            "            <xsl:copy-of select=\".\"/>\r\n" +
-            "          </xsl:if>\r\n" +
-            "        </xsl:otherwise>\r\n" +
-            "      </xsl:choose>\r\n" +
+            "    <!--or (@IsBindable = 'true' and (@IsAlwaysBindable = 'false' or @m:IsAlwaysBindable = 'false' or @metadata:IsAlwaysBindable = 'false'))-->\r\n" +
+            "    <xsl:for-each select=\"edm:EntitySet | edm:FunctionImport[not(@IsBindable) or @IsBindable = 'false']\">\r\n" +
+            "      <xsl:apply-templates select=\".\"></xsl:apply-templates><xsl:if test=\"position() != last()\">,\r\n" +
+            "    </xsl:if>\r\n" +
             "    </xsl:for-each>\r\n" +
-            "  </xsl:variable>\r\n" +
-            "\r\n" +
-            "  \r\n" +
-            "  <xsl:choose>\r\n" +
-            "    <xsl:when test=\"function-available('msxsl:node-set')\">\r\n" +
-            "      <xsl:for-each select=\"msxsl:node-set($subset)/*[local-name() != 'FunctionImport' or not(@IsBindable) or @IsBindable = 'false']\">\r\n" +
-            "        <xsl:apply-templates select=\".\"></xsl:apply-templates>\r\n" +
-            "        <xsl:if test=\"position() != last()\">,\r\n" +
-            "     </xsl:if>\r\n" +
-            "      </xsl:for-each>\r\n" +
-            "    </xsl:when>\r\n" +
-            "    <xsl:otherwise>\r\n" +
-            "      <xsl:for-each select=\"exsl:node-set($subset)/*[local-name() != 'FunctionImport' or not(@IsBindable) or @IsBindable = 'false']\">\r\n" +
-            "        <xsl:apply-templates select=\".\"></xsl:apply-templates>\r\n" +
-            "        <xsl:if test=\"position() != last()\">,\r\n" +
-            "     </xsl:if>\r\n" +
-            "      </xsl:for-each>\r\n" +
-            "    </xsl:otherwise>\r\n" +
-            "  </xsl:choose>\r\n" +
             "  });\r\n" +
             "\r\n" +
             "  $data.generatedContexts = $data.generatedContexts || [];\r\n" +
@@ -16835,15 +15871,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             "      <xsl:text>{ name: '</xsl:text>\r\n" +
             "      <xsl:value-of select=\"@Name\"/>\r\n" +
             "      <xsl:text>', type: '</xsl:text>\r\n" +
-            "      <xsl:variable name=\"curr\" select=\"@Type\"/>\r\n" +
-            "      <xsl:choose>\r\n" +
-            "        <xsl:when test=\"$fullmetadata//edm:Schema[starts-with($curr, @Namespace)]\">\r\n" +
-            "          <xsl:value-of select=\"concat($DefaultNamespace,$curr)\" />\r\n" +
-            "        </xsl:when>\r\n" +
-            "        <xsl:otherwise>\r\n" +
-            "          <xsl:value-of select=\"$curr\" />\r\n" +
-            "        </xsl:otherwise>\r\n" +
-            "      </xsl:choose>\r\n" +
+            "      <xsl:apply-templates select=\"@Type\" mode=\"render-functionImport-type\" />\r\n" +
             "      <xsl:text>' }</xsl:text>\r\n" +
             "      <xsl:if test=\"position() != last()\">, </xsl:if>\r\n" +
             "    </xsl:for-each>    \r\n" +
@@ -16859,15 +15887,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             "      <xsl:when test=\"starts-with(., 'Collection')\">$data.Queryable</xsl:when>\r\n" +
             "      <xsl:otherwise>\r\n" +
             "        <xsl:text>'</xsl:text>\r\n" +
-            "        <xsl:variable name=\"curr\" select=\".\"/>\r\n" +
-            "        <xsl:choose>\r\n" +
-            "          <xsl:when test=\"$fullmetadata//edm:Schema[starts-with($curr, @Namespace)]\">\r\n" +
-            "            <xsl:value-of select=\"concat($DefaultNamespace,$curr)\" />\r\n" +
-            "          </xsl:when>\r\n" +
-            "          <xsl:otherwise>\r\n" +
-            "            <xsl:value-of select=\"$curr\" />\r\n" +
-            "          </xsl:otherwise>\r\n" +
-            "        </xsl:choose>\r\n" +
+            "        <xsl:apply-templates select=\".\" mode=\"render-functionImport-type\" />\r\n" +
             "        <xsl:text>'</xsl:text>\r\n" +
             "      </xsl:otherwise>\r\n" +
             "    </xsl:choose>\r\n" +
@@ -16877,7 +15897,7 @@ $data.Class.define('$data.MetadataLoaderClass', null, null, {
             "      <xsl:variable name=\"curr\" select=\"substring(.,12,$len)\"/>\r\n" +
             "      <xsl:variable name=\"ElementType\" >\r\n" +
             "        <xsl:choose>\r\n" +
-            "          <xsl:when test=\"$fullmetadata//edm:Schema[starts-with($curr, @Namespace)]\">\r\n" +
+            "          <xsl:when test=\"//edm:Schema[starts-with($curr, @Namespace)]\">\r\n" +
             "            <xsl:value-of select=\"concat($DefaultNamespace,$curr)\" />\r\n" +
             "          </xsl:when>\r\n" +
             "          <xsl:otherwise>\r\n" +
@@ -17216,8 +16236,6 @@ $data.service = function (serviceUri, config, cb) {
                 }).fail(function () {
                     d.deferred.reject.apply(d.deferred, arguments);
                 });
-        }).fail(function(){
-            d.deferred.reject.apply(d.deferred, arguments);
         });
 
         return d.getPromise();
