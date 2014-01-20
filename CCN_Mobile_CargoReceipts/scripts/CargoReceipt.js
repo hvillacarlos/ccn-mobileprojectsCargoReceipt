@@ -21,6 +21,49 @@ var clickedAWBSuffix;
                     schema: {data: "data"}
                     }
                );
+function login()
+{    
+
+    
+    var RandomValue=Math.random();
+    var searchURL="http://172.16.202.166/CargoReceipt/Service1.svc/GetCargoReceiptRecords?" +
+               "AwbPrefix="+clickedAWBPrefix+"&AwbSuffix="+clickedAWBSuffix+
+               "AwbPrefix="+clickedAWBPrefix+"&AwbSuffix="+clickedAWBSuffix+
+                "&IssuingFromDate=&IssuingToDate="+
+                "&AcceptanceFromDate=&AcceptanceToDate="+
+               "&Origin=&Destination="+
+                "&companyId=TRAINING&rand="+RandomValue;//+document.getElementById("TE").value;   
+  
+
+   $.ajax({
+
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            url: searchURL,
+            cache: false,
+            async: false,
+            corssDomain: true,
+            dataType: "json",
+            success: function (data) {
+                var result = data;
+                document.getElementById("AWBNoTxt").value=clickedAWBPrefix+clickedAWBSuffix;
+                document.getElementById("AWBNoTxtDetail").value=result[0].AWBNumber;
+                document.getElementById("txtIssuingDateDetail").value=result[0].IssuingDate;
+                document.getElementById("txtAcceptanceDateDetail").value=result[0].AcceptanceDate;
+                document.getElementById("txtOriginDetail").value=result[0].Origin;
+                document.getElementById("txtDestinationDetail").value=result[0].Destination;
+                
+                if(result[0].CompleteDetails=="0")
+                    setNotificationSetting("false"); 
+                
+                /*document.getElementById("txtLastFWBDetail").value=result[0].LastFWBRecdDateTime;
+                document.getElementById("txtLastFSUDetail").value=result[0].LastRCSRecdDateTime;
+                document.getElementById("txtLastPrintedDetail").value=result[0].LastPrintDateTime;*/
+                    
+                }
+        });
+    window.location.href = "#tabstrip-CargoDetail"    
+}
 function getCargoReceiptDetail(passedAWBNumber,NotificationSetting)
 {   
    
@@ -29,6 +72,7 @@ function getCargoReceiptDetail(passedAWBNumber,NotificationSetting)
     
     var RandomValue=Math.random();
     var searchURL="http://172.16.202.166/CargoReceipt/Service1.svc/GetCargoReceiptRecords?" +
+               "AwbPrefix="+clickedAWBPrefix+"&AwbSuffix="+clickedAWBSuffix+
                "AwbPrefix="+clickedAWBPrefix+"&AwbSuffix="+clickedAWBSuffix+
                 "&IssuingFromDate=&IssuingToDate="+
                 "&AcceptanceFromDate=&AcceptanceToDate="+

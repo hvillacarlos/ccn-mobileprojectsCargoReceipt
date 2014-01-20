@@ -9,6 +9,7 @@ $data.Entity.extend("CargoReceiptDetails", {
 $data.Entity.extend("SettingDetails", {
     UserName: { type: 'string' },
     Status: { type: 'string' },
+    CompanyID: { type: 'string' },    
     DisplayCount: { type: 'string' },
     Notification: { type: 'string' },
     AutoOverride: { type: 'string' }
