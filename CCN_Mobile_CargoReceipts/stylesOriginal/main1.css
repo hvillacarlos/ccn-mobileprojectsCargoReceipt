@@ -2,10 +2,8 @@ body, html {
     margin: 0;
     height: 100%;
     width: 100%;   
-    background-color: rgb(0, 48, 87);
+    background-color: AliceBlue;  
 }
-
-
 
 /* COMMON STYLES*/
 .view-content h1 {
@@ -18,9 +16,8 @@ body, html {
 }
 
 .view-content h3 {
-    color: #0064b5;
+    color: #42454a;
     font-size: 1.1em;
-    text-align:center;     
 }
 
 .view-content p {
@@ -39,12 +36,12 @@ body, html {
 }
 
 .logo {
-    background-image: url(../styles/images/CompanyLogo.png);
-    background-repeat: no-repeat;    
-    width: 140px;
-    height: 80px;
-    margin: 30px auto;
-   }
+    background-image: url(../styles/images/logo.png);
+    background-repeat: no-repeat;
+    width: 85px;
+    height: 60px;
+    margin: 40px auto;
+}
 
 /* TEXT BOXES & LABELS  */
 .settingLabelspan {
@@ -53,33 +50,9 @@ body, html {
 }
 
 .p header-title {
-    
     font-size:12px;
     text-align:center;
     color:red;    
-}
-
-.InputText {  
-  color:White;   
-  font-size:12px;                    
-  font-weight:bold;  
-}
-
-a .spanheader{
-    width:100%;
-    margin:15px;
-    color: #0064b5;
-     
-}
-a:link
-{
-    color: #0064b5;
-    margin:15px;
-}
-
-a:visited {
-    color: #0064b5;
-    margin:15px;
 }
 
 
@@ -98,7 +71,7 @@ a:visited {
 
 .common-button{
      width : 95%;   
-     background-color : transparent;
+     background-color : green;
 }
 
 /* MAP STYLES*/
@@ -404,23 +377,3 @@ a:visited {
         background-size: 100%;
     }
 }
-
-/* DIV Collapse */
-.container {
-    width:100%;
-    border:1px solid #d3d3d3;
-}
-.container div {
-    width:100%;
-}
-.container .header {
-    background-color:#d3d3d3;
-    padding: 2px;
-    cursor: pointer;
-    font-weight: bold;
-}
-.container .content {
-    display: none;
-    padding : 5px;
-}
-

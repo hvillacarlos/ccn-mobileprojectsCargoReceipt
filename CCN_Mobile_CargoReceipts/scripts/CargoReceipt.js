@@ -116,6 +116,7 @@ function PageLoad()
     var CurrentDate=new Date();
     var CurrentMonth;*/
     document.getElementById("AWBNoTxt").value="61837349454";
+    checkSession();
     LoadCity();
 /*    CurrentMonth=(CurrentDate.getMonth()+1).toString();
     if(CurrentMonth.length==1) 

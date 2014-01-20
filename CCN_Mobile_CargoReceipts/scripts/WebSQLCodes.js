@@ -7,6 +7,8 @@ $data.Entity.extend("CargoReceiptDetails", {
     Notification: { type: 'string' }
 });
 $data.Entity.extend("SettingDetails", {
+    UserName: { type: 'string' },
+    Status: { type: 'string' },
     DisplayCount: { type: 'string' },
     Notification: { type: 'string' },
     AutoOverride: { type: 'string' }
@@ -19,11 +21,39 @@ $data.EntityContext.extend("Setting", {
     Settings: { type: $data.EntitySet, elementType: SettingDetails }
 });
 var CargoReceiptDB = new CargoReceipt({provider: 'webSql', databaseName:'MyCargoReceiptDB',}); 
+var SettingsDB = new Setting({provider: 'webSql', databaseName:'MySettingsDB',}); 
 CargoReceiptDB.onReady(function()
 {
     
 });
+SettingsDB.onReady(function()
+{
+    
+});
+function checkSession()
+{
+    
+    
+     
+     var db = window.openDatabase("MySettingsDB", "", "My WebSQL test database", 5*1024*1024);
+    
+                    var sqlstr="SELECT * FROM Settings where Status=1";                     
+	                    db.transaction(
+		                    function(tx)
+                            {                                  
+                                    tx.executeSql(sqlstr, [], function (tx, results) 
+                                    {               
+                                        if(results.rows.length>0)                                        
+                                      window.location.href = "#tabstrip-home"    
+                                        else
+                                            window.location.href = "#tabstrip-login"
+                                        
+                                    });
+		                    }
+	                    )
 
+    window.location.href = "#tabstrip-history"    
+}
 function refreshHistory()
 {
      $("#searchHistory").empty();  
@@ -61,6 +91,7 @@ function clearHistory()
                                 tx.executeSql('DELETE FROM CargoReceiptList');
 		                }
     )
+    refreshHistory();
 }
 function setNotificationSetting(passedAWBNumber)
 { 
@@ -122,7 +153,7 @@ function addToHistory()
 {    
     var db = window.openDatabase("MyCargoReceiptDB", "", "My WebSQL test database", 5*1024*1024);
     
-    //clearHistory();
+    
                     var sqlstr="SELECT * FROM CargoReceiptList Where AWBNumber='"+document.getElementById("AWBNoTxtDetail").value+"'"; 
 	                    db.transaction(
 		                    function(tx)
